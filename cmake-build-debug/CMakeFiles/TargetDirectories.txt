@@ -1,0 +1,3 @@
+/mnt/d/software_projects/opensource/network/eventplus/cmake-build-debug/CMakeFiles/eventplus.dir
+/mnt/d/software_projects/opensource/network/eventplus/cmake-build-debug/CMakeFiles/edit_cache.dir
+/mnt/d/software_projects/opensource/network/eventplus/cmake-build-debug/CMakeFiles/rebuild_cache.dir

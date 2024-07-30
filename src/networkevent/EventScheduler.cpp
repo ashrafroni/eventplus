@@ -1,0 +1,38 @@
+//
+// Created by Dell on 7/25/2024.
+//
+
+#include "EventScheduler.h"
+
+
+
+EventScheduler::EventScheduler(size_t numThreads){
+    m_numThreads = numThreads;
+    m_currentIndex = 0;
+    m_socketEventHandlers.reserve(numThreads + 1);
+    for (size_t currentIndex = 0; currentIndex < numThreads; currentIndex++) {
+        m_socketEventHandlers.push_back(std::make_unique<EventHandlerThread>());
+    }
+}
+
+EventScheduler::~EventScheduler(){
+
+}
+
+void EventScheduler::setEventDispatcherPtr(EventDispatcher* eventDispatcher){
+    for (size_t currentIndex = 0; currentIndex < m_numThreads; currentIndex++) {
+        m_socketEventHandlers.at(currentIndex)->setEventDispatcherPtr(eventDispatcher);
+    }
+}
+
+bool EventScheduler::addSocket(EventStorePointer* eventStorePointer){
+    std::unique_lock<std::mutex> lock(m_mutex);
+    m_currentIndex = (m_currentIndex + 1) % m_numThreads;
+    return m_socketEventHandlers.at(m_currentIndex)->addSocket(eventStorePointer);
+}
+
+void EventScheduler::startAllEventHandler(){
+    for(size_t currentIndex = 0; currentIndex < m_numThreads; currentIndex++){
+        m_socketEventHandlers.at(currentIndex)->startEventReceiverThread();
+    }
+}
