@@ -22,7 +22,7 @@ int main() {
     //Get Connection event
     //Option to add block IP
 
-    TcpServerSocket tcpServerSocket("127.0.0.1",8089);
+    TcpServerSocket tcpServerSocket("127.0.0.1",8089,numCores);
     tcpServerSocket.createServerSocketAndStartReceiving();
 
 
