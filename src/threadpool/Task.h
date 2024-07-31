@@ -10,8 +10,6 @@
 
 class Task {
 public:
-
-
     Task(){
         m_taskExecutionFunc = NULL;
         m_eventStorePointer = NULL;
