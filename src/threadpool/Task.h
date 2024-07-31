@@ -17,15 +17,15 @@ public:
         m_eventStorePointer = NULL;
     }
 
-    Task(std::function<void(EventStorePointer*)> taskExecutionFuncParam,
-         EventStorePointer* eventStorePointer)
+    Task(EventStorePointer* eventStorePointer,std::function<void(EventStorePointer*)> taskExecutionFuncParam
+         )
             : m_taskExecutionFunc(taskExecutionFuncParam),
               m_eventStorePointer(std::move(eventStorePointer)) {
     }
 
     void execute() {
         if (m_taskExecutionFunc) {
-
+            m_taskExecutionFunc(m_eventStorePointer);
         }
     }
 

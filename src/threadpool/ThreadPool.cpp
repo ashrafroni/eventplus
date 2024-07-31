@@ -21,10 +21,10 @@ ThreadPool::~ThreadPool() {
     }
 }
 
-void ThreadPool::enqueueTask(std::function<void(EventStorePointer*)> taskFunction) {
+void ThreadPool::enqueueTask(EventStorePointer* eventStorePointer,std::function<void(EventStorePointer*)> taskFunction) {
     {
         std::unique_lock<std::mutex> lock(m_queueMutex);
-        m_tasks.emplace();
+        m_tasks.emplace(eventStorePointer, taskFunction);
     }
     m_condition.notify_one();
 }

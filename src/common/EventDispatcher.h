@@ -11,6 +11,6 @@ class EventDispatcher {
 public:
     virtual ~EventDispatcher() = default;
 
-    virtual void handleConnectionEvent(EventStorePointer* eventStorePointer) = 0;
+    virtual void handleEvent(EventStorePointer* eventStorePointer) = 0;
 };
 

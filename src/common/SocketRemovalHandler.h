@@ -8,6 +8,6 @@
 #include "SocketDetails.h"
 
 
-class SocketOperationHandler{
+class SocketRemovalHandler{
     virtual void removeSocket(EventStorePointer* eventStorePointer) = 0;
 };

@@ -10,12 +10,12 @@
 #include "../networkevent/EventHandlerThread.h"
 #include "SocketHandler.h"
 #include "../networkevent/EventScheduler.h"
-#include "../common/SocketOperationHandler.h"
+#include "../common/SocketRemovalHandler.h"
 #include <thread>
 #include <sys/socket.h>
 #include <unordered_map>
 
-class TcpServerSocket : public EventDispatcher,SocketOperationHandler {
+class TcpServerSocket : public EventDispatcher,SocketRemovalHandler {
 
 public:
     TcpServerSocket(const std::string &serverIp, int serverPort,int numCoresInProcessor);
@@ -31,7 +31,7 @@ public:
     void startReceivingConnection();
 
     bool createServerSocketAndStartReceiving();
-    void handleConnectionEvent(EventStorePointer* eventStorePointer);
+    void handleEvent(EventStorePointer* eventStorePointer);
     void removeSocket(EventStorePointer* eventStorePointer);
 public:
     void socketAcceptThread();

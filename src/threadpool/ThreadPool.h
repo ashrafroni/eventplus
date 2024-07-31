@@ -17,7 +17,7 @@ public:
     ThreadPool(size_t numThreads);
     ~ThreadPool();
 
-    void enqueueTask(std::function<void(EventStorePointer*)> taskFunction);
+    void enqueueTask(EventStorePointer* eventStorePointer, std::function<void(EventStorePointer*)> taskFunction);
 
 private:
     std::vector<std::thread> m_workers;

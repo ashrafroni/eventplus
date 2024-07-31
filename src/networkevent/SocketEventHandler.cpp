@@ -117,5 +117,5 @@ void SocketEventHandler::handleEvent(EventStorePointer* eventStorePointer)
     }
 
     if(m_eventDispatcher != NULL)
-        m_eventDispatcher->handleConnectionEvent(eventStorePointer);
+        m_eventDispatcher->handleEvent(eventStorePointer);
 }

@@ -44,7 +44,7 @@ void TcpServerSocket::closeServerSocket(){
     }
 }
 
-void TcpServerSocket::handleConnectionEvent(EventStorePointer* eventStorePointer)
+void TcpServerSocket::handleEvent(EventStorePointer* eventStorePointer)
 {
     //Secured area
     std::unique_lock<std::mutex> lock(clientEventStoresMutex);

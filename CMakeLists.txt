@@ -17,7 +17,9 @@ add_executable(eventplus
         src/networkevent/EventScheduler.cpp
         src/networkevent/EventHandlerThread.cpp
         src/socket/SocketHandler.cpp
-        src/common/SocketOperationHandler.h
+        src/common/SocketRemovalHandler.h
+        src/workerthread/IOWorkerThreadHandler.cpp
+        src/workerthread/IOWorkerThreadHandler.h
 )
 # Link with pthreads
 find_package(Threads REQUIRED)
