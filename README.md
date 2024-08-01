@@ -2,7 +2,7 @@ eventplus
 
 
 Overview
-Project Name is a C++ library inspired by libevent, aimed at providing high-performance event-driven programming capabilities. This project is currently under active development and not yet ready for production use.
+eventplus is a C++ library inspired by libevent, aimed at providing high-performance event-driven programming capabilities. This project is currently under active development and not yet ready for production use.
 
 Features
 Event handling
