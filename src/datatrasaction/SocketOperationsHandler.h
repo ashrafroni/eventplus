@@ -9,11 +9,12 @@
 
 
 class SocketOperationsHandler {
+public:
     virtual ~SocketOperationsHandler() = default;
 
-    virtual bool initConnection(std::unique_ptr<EventStorePointer> eventStorePointer) = 0;
-    virtual ssize_t sendData(std::unique_ptr<EventStorePointer> eventStorePointer,const std::string& data) = 0;
-    virtual ssize_t receiveData(std::unique_ptr<EventStorePointer> eventStorePointer, std::string& data) = 0;
+    virtual bool initConnection(EventStorePointer* eventStorePointer) = 0;
+    virtual ssize_t sendData(EventStorePointer* eventStorePointer,std::string& data) = 0;
+    virtual ssize_t receiveData(EventStorePointer* eventStorePointer, std::string& data) = 0;
     virtual void closeConnection() = 0;
 };
 

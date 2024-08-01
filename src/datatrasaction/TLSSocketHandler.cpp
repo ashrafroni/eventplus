@@ -5,15 +5,15 @@
 #include "TLSSocketHandler.h"
 
 
-bool TLSSocketHandler::initConnection(std::unique_ptr<EventStorePointer> eventStorePointer){
+bool TLSSocketHandler::initConnection(EventStorePointer* eventStorePointer){
     return true;
 }
 
-ssize_t TLSSocketHandler::sendData(std::unique_ptr<EventStorePointer> eventStorePointer,const std::string& data){
+ssize_t TLSSocketHandler::sendData(EventStorePointer* eventStorePointer, std::string& data){
     return 0;
 }
 
-ssize_t TLSSocketHandler::receiveData(std::unique_ptr<EventStorePointer> eventStorePointer, std::string& data){
+ssize_t TLSSocketHandler::receiveData(EventStorePointer* eventStorePointer, std::string& data){
     return 0;
 }
 

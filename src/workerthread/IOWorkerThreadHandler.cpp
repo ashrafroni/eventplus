@@ -15,9 +15,11 @@ IOWorkerThreadHandler::~IOWorkerThreadHandler(){
 void IOWorkerThreadHandler::handleEvent(EventStorePointer* eventStorePointer){
     auto boundFunction = std::bind(&IOWorkerThreadHandler::handleIOEvent, this, std::placeholders::_1);
     std::function<void(EventStorePointer*)> taskFunction = boundFunction;
-    m_threadPool.enqueueTask(taskFunction);
+    m_threadPool.enqueueTask(eventStorePointer,taskFunction);
 }
 
 void IOWorkerThreadHandler::handleIOEvent(EventStorePointer* eventStorePointer){
+    std::string dataReceived;
+    m_socketOperationHandler->receiveData(eventStorePointer,dataReceived);
 
 }

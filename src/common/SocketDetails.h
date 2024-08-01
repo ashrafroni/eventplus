@@ -26,6 +26,7 @@ class EventStorePointer : public SocketDetails {
 public:
     void* m_parameters;
     void* m_socketEventHandler;
+    std::mutex m_socketMutex;
 
 //    SSL* m_pSSL;
     EventStorePointer() : m_parameters(nullptr),m_socketEventHandler(nullptr) {

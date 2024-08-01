@@ -13,9 +13,9 @@ class TLSSocketHandler : public SocketOperationsHandler {
     TLSSocketHandler();
     ~TLSSocketHandler();
 
-    bool initConnection(std::unique_ptr<EventStorePointer> eventStorePointer);
-    ssize_t sendData(std::unique_ptr<EventStorePointer> eventStorePointer,const std::string& data);
-    ssize_t receiveData(std::unique_ptr<EventStorePointer> eventStorePointer, std::string& data);
+    bool initConnection(EventStorePointer* eventStorePointer);
+    ssize_t sendData(EventStorePointer* eventStorePointer, std::string& data);
+    ssize_t receiveData(EventStorePointer* eventStorePointer, std::string& data);
     void closeConnection();
 };
 
