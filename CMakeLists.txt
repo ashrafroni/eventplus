@@ -20,6 +20,11 @@ add_executable(eventplus
         src/common/SocketRemovalHandler.h
         src/workerthread/IOWorkerThreadHandler.cpp
         src/workerthread/IOWorkerThreadHandler.h
+        src/workerthread/ExecutorThreadHandler.cpp
+        src/workerthread/ExecutorThreadHandler.h
+        src/common/DataEventDispatcher.h
+        src/ssl/SSLCertificateHandler.cpp
+        src/ssl/SSLCertificateHandler.h
 )
 # Link with pthreads
 find_package(Threads REQUIRED)
