@@ -93,6 +93,7 @@ void SocketEventHandler::startPolling()
         {
             continue;
         }
+        std::cout << "count: "<< event_count << std::endl;
         for (int i = 0; i < event_count; i++)
         {
             EventStorePointer* eventStorePointer = static_cast<EventStorePointer*> (m_events[i].data.ptr);

@@ -33,6 +33,8 @@ public:
     bool createServerSocketAndStartReceiving();
     void handleEvent(EventStorePointer* eventStorePointer);
     void removeSocket(EventStorePointer* eventStorePointer);
+    void setEventDispatcherForIOEvent(EventDispatcher* eventDispatcher);
+
 public:
     void socketAcceptThread();
 

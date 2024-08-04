@@ -57,6 +57,10 @@ void TcpServerSocket::handleEvent(EventStorePointer* eventStorePointer)
     std::cout << "From IP: "<< ipStr << " Client IP:" << ipStr <<  " Socket ID:" << clientSocketId  << " Port:" << clientPort << std::endl;
 
 
+
+    //Set non blocking
+    m_socketHandler.setNonBlocking(clientSocketId);
+
     //Storing in the map
     auto clientEventStore = std::make_unique<EventStorePointer>(clientSocketDetails);
     clientEventStore->m_socketId = clientSocketId;
@@ -96,5 +100,11 @@ bool TcpServerSocket::createServerSocketAndStartReceiving()
     return true;
 }
 
+void TcpServerSocket::setEventDispatcherForIOEvent(EventDispatcher* eventDispatcher){
+    m_eventScheduler.setEventDispatcherPtr(eventDispatcher);
+}
 
+void TcpServerSocket::startReceivingConnection(){
+    m_eventScheduler.startAllEventHandler();
+}
 

@@ -16,6 +16,8 @@ public:
     bool initConnection(EventStorePointer* eventStorePointer);
     ssize_t sendData(EventStorePointer* eventStorePointer,std::string& data);
     ssize_t receiveData(EventStorePointer* eventStorePointer, std::string& data);
+    ssize_t receivePartialData(EventStorePointer* eventStorePointer,int dataSize, std::string& data);
+    ssize_t getAvailableDataInSocket(EventStorePointer* eventStorePointer);
     void closeConnection();
 };
 

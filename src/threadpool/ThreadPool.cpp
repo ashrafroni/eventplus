@@ -31,14 +31,19 @@ void ThreadPool::enqueueTask(EventStorePointer* eventStorePointer,std::function<
 
 void ThreadPool::workerThread() {
     while (!m_stop.load()) {
+        Task task(nullptr, nullptr);
+        {
+            std::unique_lock<std::mutex> lock(m_queueMutex);
+            m_condition.wait(lock, [this] { return m_stop.load() || !m_tasks.empty(); });
 
-        std::unique_lock<std::mutex> lock(m_queueMutex);
-        m_condition.wait(lock, [this] { return m_stop.load() || !m_tasks.empty(); });
-        if (m_stop.load() && m_tasks.empty()) {
-            return;
+            if (m_stop.load() && m_tasks.empty()) {
+                return;
+            }
+
+            task = std::move(m_tasks.front());
+            m_tasks.pop();
         }
-        Task task = m_tasks.front();
-        m_tasks.pop();
         task.execute();
     }
+
 }
