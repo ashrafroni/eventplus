@@ -17,7 +17,7 @@ ssize_t TLSSocketHandler::receiveData(EventStorePointer* eventStorePointer, std:
     return 0;
 }
 
-void TLSSocketHandler::closeConnection(){
+void TLSSocketHandler::closeConnection(EventStorePointer* eventStorePointer){
 
 }
 

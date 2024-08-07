@@ -5,7 +5,7 @@
 #pragma once
 #include "../common/CommonDefinition.h"
 #include "../threadpool/ThreadPool.h"
-#include "../datatrasaction/SocketOperationsHandler.h"
+#include "../common/SocketOperationsHandler.h"
 #include "../common/EventDispatcher.h"
 
 class IOWorkerThreadHandler : public EventDispatcher {
@@ -16,15 +16,13 @@ public:
 
     void handleEvent(EventStorePointer* eventStorePointer);
 
-    void setSocketOperationHandler(SocketOperationsHandler* socketOperationHandler);
-
 private:
     void handleIOEvent(EventStorePointer* eventStorePointer); //,SocketOperationsHandler* socketOperationHandler
 
 
 private:
     ThreadPool m_threadPool;
-    SocketOperationsHandler* m_socketOperationHandler;
+
 };
 
 

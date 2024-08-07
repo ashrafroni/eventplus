@@ -66,6 +66,7 @@ void TcpServerSocket::handleEvent(EventStorePointer* eventStorePointer)
     clientEventStore->m_socketId = clientSocketId;
     clientEventStore->m_strClientSocketAddress = ipStr;
     clientEventStore->m_eventSourcePort = clientPort;
+    clientEventStore->setSocketHandler(m_socketOperationHandler);
     clientEventStores[clientSocketId] = std::move(clientEventStore);
 
 
@@ -89,8 +90,7 @@ void TcpServerSocket::removeSocket(EventStorePointer* eventStorePointer){
 
 
 
-bool TcpServerSocket::createServerSocketAndStartReceiving()
-{
+bool TcpServerSocket::createServerSocketAndStartReceiving(){
     int socketId = m_socketHandler.createServerSocket(m_serverIP,std::to_string(m_serverPort),m_socketDetails);
     if(socketId < 0)
         return false;
@@ -108,3 +108,6 @@ void TcpServerSocket::startReceivingConnection(){
     m_eventScheduler.startAllEventHandler();
 }
 
+void TcpServerSocket::setSocketOperationHandler(SocketOperationsHandler* socketOperationHandler){
+    m_socketOperationHandler = socketOperationHandler;
+}

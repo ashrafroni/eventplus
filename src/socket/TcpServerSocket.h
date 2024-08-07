@@ -34,6 +34,7 @@ public:
     void handleEvent(EventStorePointer* eventStorePointer);
     void removeSocket(EventStorePointer* eventStorePointer);
     void setEventDispatcherForIOEvent(EventDispatcher* eventDispatcher);
+    void setSocketOperationHandler(SocketOperationsHandler* socketOperationHandler);
 
 public:
     void socketAcceptThread();
@@ -51,6 +52,7 @@ private:
 
     std::unordered_map<int, std::unique_ptr<EventStorePointer>> clientEventStores;
     std::mutex clientEventStoresMutex;
+    SocketOperationsHandler* m_socketOperationHandler;
 };
 
 

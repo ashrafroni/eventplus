@@ -102,6 +102,6 @@ ssize_t NormalSocketHandler::receivePartialData(EventStorePointer* eventStorePoi
 
     return 0;
 }
-void NormalSocketHandler::closeConnection(){
+void NormalSocketHandler::closeConnection(EventStorePointer* eventStorePointer){
 
 }

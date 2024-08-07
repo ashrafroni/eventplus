@@ -4,9 +4,10 @@
 
 #pragma once
 
-#include "../common/CommonDefinition.h"
-#include "../common/SocketDetails.h"
+#include "CommonDefinition.h"
+#include "SocketDetails.h"
 
+class EventStorePointer;
 
 class SocketOperationsHandler {
 public:
@@ -17,7 +18,7 @@ public:
     virtual ssize_t receiveData(EventStorePointer* eventStorePointer, std::string& data) = 0;
     virtual ssize_t receivePartialData(EventStorePointer* eventStorePointer,int dataSize, std::string& data) = 0;
     virtual ssize_t getAvailableDataInSocket(EventStorePointer* eventStorePointer) = 0;
-    virtual void closeConnection() = 0;
+    virtual void closeConnection(EventStorePointer* eventStorePointer) = 0;
 };
 
 

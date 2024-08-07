@@ -26,10 +26,11 @@ int main() {
 
     IOWorkerThreadHandler ioWorkerThreadHandler(numCores);
     NormalSocketHandler* normalSocketHandler = new NormalSocketHandler();
-    ioWorkerThreadHandler.setSocketOperationHandler(normalSocketHandler);
+//    ioWorkerThreadHandler.setSocketOperationHandler(normalSocketHandler);
 
     TcpServerSocket tcpServerSocket("127.0.0.1",8089,numCores);
     tcpServerSocket.setEventDispatcherForIOEvent(&ioWorkerThreadHandler);
+    tcpServerSocket.setSocketOperationHandler(normalSocketHandler);
     tcpServerSocket.startReceivingConnection();
     tcpServerSocket.createServerSocketAndStartReceiving();
 

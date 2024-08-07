@@ -12,9 +12,7 @@ IOWorkerThreadHandler::~IOWorkerThreadHandler(){
 
 }
 
-void IOWorkerThreadHandler::setSocketOperationHandler(SocketOperationsHandler* socketOperationHandler){
-    m_socketOperationHandler = socketOperationHandler;
-}
+
 
 void IOWorkerThreadHandler::handleEvent(EventStorePointer* eventStorePointer){
     auto boundFunction = std::bind(&IOWorkerThreadHandler::handleIOEvent, this, std::placeholders::_1);
@@ -22,9 +20,10 @@ void IOWorkerThreadHandler::handleEvent(EventStorePointer* eventStorePointer){
     m_threadPool.enqueueTask(eventStorePointer,taskFunction);
 }
 
-void IOWorkerThreadHandler::handleIOEvent(EventStorePointer* eventStorePointer){ //SocketOperationsHandler* socketOperationHandler
+void IOWorkerThreadHandler::handleIOEvent(EventStorePointer* eventStorePointer){
     std::string dataReceived;
-    int iDataAvailable = m_socketOperationHandler->getAvailableDataInSocket(eventStorePointer);
-    std::cout << "iDataAvailable:" << iDataAvailable << std::endl;
-    m_socketOperationHandler->receiveData(eventStorePointer,dataReceived);
+    int iDataAvailable = eventStorePointer->getAvailableDataInSocket();
+    eventStorePointer->receiveData(dataReceived);
+    std::cout << "iDataAvailable: " << iDataAvailable << ":" << dataReceived << std::endl;
+
 }
