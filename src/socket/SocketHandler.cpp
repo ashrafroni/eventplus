@@ -9,7 +9,6 @@
 #include <netdb.h>
 #include <cstring>
 #include <fcntl.h>
-#include <fcntl.h>
 #include "SocketHandler.h"
 
 void SocketHandler::setNonBlocking(int socketID) {

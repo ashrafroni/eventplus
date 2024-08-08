@@ -14,6 +14,7 @@
 TcpServerSocket::TcpServerSocket(const std::string &serverIp, int serverPort,int numCoresInProcessor)
     : m_serverIP(serverIp), m_serverPort(serverPort),m_eventScheduler(numCoresInProcessor){
     m_socketEventHandler.setEventDispatcherPtr(this);
+    m_eventScheduler.setSocketRemovalHandler(this);
 }
 
 const std::string &TcpServerSocket::getServerIp() const {
@@ -44,7 +45,7 @@ void TcpServerSocket::closeServerSocket(){
     }
 }
 
-void TcpServerSocket::handleEvent(EventStorePointer* eventStorePointer)
+void TcpServerSocket::handleIOEvent(EventStorePointer* eventStorePointer)
 {
     //Secured area
     std::unique_lock<std::mutex> lock(clientEventStoresMutex);

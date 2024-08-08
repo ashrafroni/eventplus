@@ -98,9 +98,41 @@ ssize_t NormalSocketHandler::getAvailableDataInSocket(EventStorePointer* eventSt
     return bytesAvailable;
 }
 
-ssize_t NormalSocketHandler::receivePartialData(EventStorePointer* eventStorePointer,int dataSize, std::string& data){
+ssize_t NormalSocketHandler::receivePartialData(EventStorePointer* eventStorePointer, int dataSize, std::string& data) {
+    std::vector<char> buffer(dataSize);
+    ssize_t totalBytesRead = 0;
 
-    return 0;
+    while (totalBytesRead < dataSize) {
+        ssize_t bytesRead = read(eventStorePointer->m_socketId, buffer.data() + totalBytesRead, dataSize - totalBytesRead);
+
+        if (bytesRead < 0) {
+            if (errno == EINTR) {
+                continue;
+            } else if (errno == EWOULDBLOCK || errno == EAGAIN) {
+                // Socket is non-blocking and no data is available
+                break;
+            } else {
+                // Other read error
+                perror("read failed");
+                return -1;
+            }
+        }
+
+        if (bytesRead == 0) {
+            // Socket was closed by the peer
+            std::cout << "Socket closed by peer" << std::endl;
+            break;
+        }
+
+        totalBytesRead += bytesRead;
+    }
+
+    if (totalBytesRead > 0) {
+        // Append the read data to the string
+        data.append(buffer.data(), totalBytesRead);
+    }
+
+    return totalBytesRead;
 }
 void NormalSocketHandler::closeConnection(EventStorePointer* eventStorePointer){
 

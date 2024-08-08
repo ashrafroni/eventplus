@@ -14,7 +14,7 @@ public:
     ~IOWorkerThreadHandler();
 
 
-    void handleEvent(EventStorePointer* eventStorePointer);
+    void handleIOEvent(EventStorePointer* eventStorePointer);
 
 private:
     void handleIOEvent(EventStorePointer* eventStorePointer); //,SocketOperationsHandler* socketOperationHandler

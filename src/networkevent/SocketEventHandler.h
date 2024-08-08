@@ -12,6 +12,7 @@
 #include "../common/EventDispatcher.h"
 #include "../common/SocketDetails.h"
 #include "../common/CommonDefinition.h"
+#include "../common/SocketRemovalHandler.h"
 
 class SocketEventHandler {
 
@@ -22,13 +23,13 @@ public:
     bool addSocket(EventStorePointer* eventStorePointer);
     bool removeSocket(EventStorePointer* eventStorePointer);
     void handleEvent(EventStorePointer* eventStorePointer);
-    bool removeSocket(int socketId);
+//    bool removeSocket(int socketId);
 
     void startPolling();
     void stopPolling();
     void setEpollEvent(uint32_t events);
     void setEventDispatcherPtr(EventDispatcher* eventDispatcher);
-
+    void setSocketRemovalHandler(SocketRemovalHandler* removeSocketEventHandler);
     void createEpoll();
     void closeEpoll();
 
@@ -42,6 +43,7 @@ private:
     epoll_event m_events[MAX_EVENTS];
     int m_connectionSource;
     EventDispatcher* m_eventDispatcher;
+    SocketRemovalHandler* m_removeSocketEventHandler;
     std::mutex m_pollMutex;
 };
 

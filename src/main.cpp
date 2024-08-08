@@ -43,6 +43,8 @@ int main() {
     std::cout<< "sending:" << std::endl;
     std::this_thread::sleep_for(std::chrono::seconds(2));
     tcpClientSocket.sendData();
+    std::this_thread::sleep_for(std::chrono::seconds(5));
+//    tcpClientSocket.closeSocket();
 //    for(int i = 0; i < 7; i++){
 //        //std::cout<< "sending again:" << std::endl;
 //        tcpClientSocket.sendData();
