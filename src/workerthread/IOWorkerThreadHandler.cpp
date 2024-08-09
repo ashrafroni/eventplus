@@ -6,21 +6,24 @@
 
 
 IOWorkerThreadHandler::IOWorkerThreadHandler(size_t numThreads) : m_threadPool(numThreads){
-
+    m_taskFunction = std::bind(&IOWorkerThreadHandler::handleIOEvent, this, std::placeholders::_1);
 }
+
 IOWorkerThreadHandler::~IOWorkerThreadHandler(){
 
 }
 
-
-
 void IOWorkerThreadHandler::handleIOEvent(EventStorePointer* eventStorePointer){
-    auto boundFunction = std::bind(&IOWorkerThreadHandler::handleIOEvent, this, std::placeholders::_1);
-    std::function<void(EventStorePointer*)> taskFunction = boundFunction;
+
+    std::function<void(EventStorePointer*)> taskFunction = m_taskFunction;
     m_threadPool.enqueueTask(eventStorePointer,taskFunction);
 }
 
-void IOWorkerThreadHandler::handleIOEvent(EventStorePointer* eventStorePointer){
+void IOWorkerThreadHandler::setTaskFunction(const std::function<void(EventStorePointer*)>& taskFunction){
+    m_taskFunction = taskFunction;
+}
+
+void IOWorkerThreadHandler::handleIOTask(EventStorePointer* eventStorePointer){
     std::string dataReceived;
     int iDataAvailable = eventStorePointer->getAvailableDataInSocket();
     //eventStorePointer->receiveData(dataReceived);
@@ -29,6 +32,4 @@ void IOWorkerThreadHandler::handleIOEvent(EventStorePointer* eventStorePointer){
     std::string restDataReceived;
     eventStorePointer->receivePartialData(iDataAvailable - 4,restDataReceived);
     std::cout << "iDataAvailable: " << iDataAvailable << ":" << restDataReceived << std::endl;
-
-
 }
