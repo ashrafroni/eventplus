@@ -31,7 +31,7 @@ void ThreadPool::enqueueTask(EventStorePointer* eventStorePointer,std::function<
 
 void ThreadPool::workerThread() {
     while (!m_stop.load()) {
-        Task task(nullptr, nullptr);
+        IOTask task(nullptr, nullptr);
         {
             std::unique_lock<std::mutex> lock(m_queueMutex);
             m_condition.wait(lock, [this] { return m_stop.load() || !m_tasks.empty(); });

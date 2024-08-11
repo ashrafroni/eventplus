@@ -9,7 +9,7 @@
 #include <condition_variable>
 #include <atomic>
 #include "../common/CommonDefinition.h"
-#include "Task.h"
+#include "../IOWorkerThread/IOTask.h"
 
 
 class ThreadPool {
@@ -21,7 +21,7 @@ public:
 
 private:
     std::vector<std::thread> m_workers;
-    std::queue<Task> m_tasks;
+    std::queue<IOTask> m_tasks;
 
     std::mutex m_queueMutex;
     std::condition_variable m_condition;

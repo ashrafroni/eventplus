@@ -28,7 +28,6 @@ ssize_t NormalSocketHandler::sendData(EventStorePointer* eventStorePointer, std:
 
     while (totalSent < dataLength) {
         ssize_t bytesSent = send(eventStorePointer->m_socketId, dataPtr + totalSent, dataLength - totalSent, 0);
-
         if (bytesSent < 0) {
             if (errno == EINTR) {
                 continue;
@@ -39,10 +38,8 @@ ssize_t NormalSocketHandler::sendData(EventStorePointer* eventStorePointer, std:
         }
 
         if (bytesSent == 0) {
-            // Connection closed by the peer
             return 0;
         }
-
         totalSent += bytesSent;
     }
 
@@ -60,7 +57,6 @@ ssize_t NormalSocketHandler::receiveData(EventStorePointer* eventStorePointer, s
         bytesRead = read(eventStorePointer->m_socketId, buffer, sizeof(buffer));
 
         if (bytesRead > 0) {
-            std::cout << "bytesRead > 0" << buffer << std::endl;
             bufferDataRead.insert(bufferDataRead.end(), buffer, buffer + bytesRead);
         } else if (bytesRead == 0) {
             // Connection closed by the peer

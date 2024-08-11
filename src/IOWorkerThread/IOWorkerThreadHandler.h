@@ -15,9 +15,7 @@ public:
 
 
     void handleIOEvent(EventStorePointer* eventStorePointer);
-    void setTaskFunction(const std::function<void(EventStorePointer*)>& taskFunction); {
-        m_taskFunction = taskFunction;
-    }
+    void setTaskFunction(const std::function<void(EventStorePointer*)>& taskFunction);
 
 private:
     void handleIOTask(EventStorePointer* eventStorePointer); //,SocketOperationsHandler* socketOperationHandler
