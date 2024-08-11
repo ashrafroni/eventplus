@@ -19,6 +19,12 @@ EventScheduler::~EventScheduler(){
 
 }
 
+void EventScheduler::setSocketRemovalHandler(SocketRemovalHandler* removeSocketEventHandler){
+    for (size_t currentIndex = 0; currentIndex < m_numThreads; currentIndex++) {
+        m_socketEventHandlers.at(currentIndex)->setSocketRemovalHandler(removeSocketEventHandler);
+    }
+}
+
 void EventScheduler::setEventDispatcherPtr(EventDispatcher* eventDispatcher){
     for (size_t currentIndex = 0; currentIndex < m_numThreads; currentIndex++) {
         m_socketEventHandlers.at(currentIndex)->setEventDispatcherPtr(eventDispatcher);

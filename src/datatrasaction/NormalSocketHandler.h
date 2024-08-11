@@ -6,7 +6,7 @@
 
 #include "../common/CommonDefinition.h"
 #include "../common/SocketDetails.h"
-#include "SocketOperationsHandler.h"
+#include "../common/SocketOperationsHandler.h"
 
 class NormalSocketHandler : public SocketOperationsHandler {
 public:
@@ -16,7 +16,9 @@ public:
     bool initConnection(EventStorePointer* eventStorePointer);
     ssize_t sendData(EventStorePointer* eventStorePointer,std::string& data);
     ssize_t receiveData(EventStorePointer* eventStorePointer, std::string& data);
-    void closeConnection();
+    ssize_t receivePartialData(EventStorePointer* eventStorePointer,int dataSize, std::string& data);
+    ssize_t getAvailableDataInSocket(EventStorePointer* eventStorePointer);
+    void closeConnection(EventStorePointer* eventStorePointer);
 };
 
 

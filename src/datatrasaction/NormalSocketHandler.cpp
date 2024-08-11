@@ -5,8 +5,15 @@
 #include <cstring>
 #include <unistd.h>
 #include "NormalSocketHandler.h"
+#include <sys/ioctl.h>
 
 
+NormalSocketHandler::NormalSocketHandler(){
+
+}
+NormalSocketHandler::~NormalSocketHandler(){
+
+}
 bool NormalSocketHandler::initConnection(EventStorePointer* eventStorePointer){
     return true;
 }
@@ -21,7 +28,6 @@ ssize_t NormalSocketHandler::sendData(EventStorePointer* eventStorePointer, std:
 
     while (totalSent < dataLength) {
         ssize_t bytesSent = send(eventStorePointer->m_socketId, dataPtr + totalSent, dataLength - totalSent, 0);
-
         if (bytesSent < 0) {
             if (errno == EINTR) {
                 continue;
@@ -32,41 +38,98 @@ ssize_t NormalSocketHandler::sendData(EventStorePointer* eventStorePointer, std:
         }
 
         if (bytesSent == 0) {
-            // Connection closed by the peer
             return 0;
         }
-
         totalSent += bytesSent;
     }
 
     return totalSent;
 }
 
+
+
 ssize_t NormalSocketHandler::receiveData(EventStorePointer* eventStorePointer, std::string& data){
     std::vector<char> bufferDataRead;
     std::lock_guard<std::mutex> lock(eventStorePointer->m_socketMutex);
-
     char buffer[1024];
     ssize_t bytesRead;
+    while (true) {
+        bytesRead = read(eventStorePointer->m_socketId, buffer, sizeof(buffer));
 
-    while ((bytesRead = read(eventStorePointer->m_socketId, buffer, sizeof(buffer))) > 0) {
-        bufferDataRead.insert(bufferDataRead.end(), buffer, buffer + bytesRead);
-    }
-
-    if (bytesRead == -1 && errno != EWOULDBLOCK && errno != EAGAIN) {
-        std::cerr << "Error reading from socket: " << strerror(errno) << std::endl;
-        throw std::runtime_error("Socket read error");
-    }
-
-    if (bytesRead == 0) {
-        std::cout << "Socket closed by peer" << std::endl;
-        return 0;
+        if (bytesRead > 0) {
+            bufferDataRead.insert(bufferDataRead.end(), buffer, buffer + bytesRead);
+        } else if (bytesRead == 0) {
+            // Connection closed by the peer
+            std::cout << "Socket closed by peer" << std::endl;
+            break;
+        } else {
+            std::cout << "error  " << bytesRead  << std::endl;
+            if (errno == EWOULDBLOCK || errno == EAGAIN) {
+                // No more data available for now, but connection is still open
+                std::cout << "No more data available, will wait for more data" << std::endl;
+                break; // or use a mechanism to wait for more data (e.g., epoll, select, etc.)
+            } else if (errno == EINTR) {
+                // Interrupted by a signal, try again
+                continue;
+            } else {
+                // An error occurred
+                std::cerr << "Error reading from socket: " << strerror(errno) << std::endl;
+                throw std::runtime_error("Socket read error");
+            }
+        }
     }
 
     data.assign(bufferDataRead.begin(), bufferDataRead.end());
     return bufferDataRead.size();
 }
 
-void NormalSocketHandler::closeConnection(){
+
+ssize_t NormalSocketHandler::getAvailableDataInSocket(EventStorePointer* eventStorePointer){
+    ssize_t bytesAvailable;
+    if (ioctl(eventStorePointer->m_socketId, FIONREAD, &bytesAvailable) == -1) {
+        perror("ioctl FIONREAD");
+        return -1;
+
+    }
+    return bytesAvailable;
+}
+
+ssize_t NormalSocketHandler::receivePartialData(EventStorePointer* eventStorePointer, int dataSize, std::string& data) {
+    std::vector<char> buffer(dataSize);
+    ssize_t totalBytesRead = 0;
+
+    while (totalBytesRead < dataSize) {
+        ssize_t bytesRead = read(eventStorePointer->m_socketId, buffer.data() + totalBytesRead, dataSize - totalBytesRead);
+
+        if (bytesRead < 0) {
+            if (errno == EINTR) {
+                continue;
+            } else if (errno == EWOULDBLOCK || errno == EAGAIN) {
+                // Socket is non-blocking and no data is available
+                break;
+            } else {
+                // Other read error
+                perror("read failed");
+                return -1;
+            }
+        }
+
+        if (bytesRead == 0) {
+            // Socket was closed by the peer
+            std::cout << "Socket closed by peer" << std::endl;
+            break;
+        }
+
+        totalBytesRead += bytesRead;
+    }
+
+    if (totalBytesRead > 0) {
+        // Append the read data to the string
+        data.append(buffer.data(), totalBytesRead);
+    }
+
+    return totalBytesRead;
+}
+void NormalSocketHandler::closeConnection(EventStorePointer* eventStorePointer){
 
 }

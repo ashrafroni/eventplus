@@ -6,7 +6,7 @@
 
 
 SocketEventHandler::SocketEventHandler() {
-    m_pollEvent =  EPOLLIN | EPOLLET;
+    m_pollEvent =  EPOLLIN | EPOLLET | EPOLLRDHUP;
     createEpoll();
 }
 
@@ -67,37 +67,42 @@ bool SocketEventHandler::removeSocket(EventStorePointer* eventStorePointer) {
     return true;
 }
 
-bool SocketEventHandler::removeSocket(int socketId) {
-    m_pollMutex.lock();
-    struct epoll_event ev;
-    if (epoll_ctl(m_epollFileDescriptor, EPOLL_CTL_DEL, socketId, &ev) == -1) {
-        perror("epoll_ctl: listen_sock");
-        m_pollMutex.unlock();
-        return false;
-    }
-    m_pollMutex.unlock();
-    return true;
-}
+//bool SocketEventHandler::removeSocket(int socketId) {
+//    m_pollMutex.lock();
+//    struct epoll_event ev;
+//    if (epoll_ctl(m_epollFileDescriptor, EPOLL_CTL_DEL, socketId, &ev) == -1) {
+//        perror("epoll_ctl: listen_sock");
+//        m_pollMutex.unlock();
+//        return false;
+//    }
+//    m_pollMutex.unlock();
+//    return true;
+//}
 
 void SocketEventHandler::setEventDispatcherPtr(EventDispatcher* eventDispatcher)
 {
     m_eventDispatcher = eventDispatcher;
 }
 
-void SocketEventHandler::startPolling()
-{
-    while (m_continuePolling)
-    {
+void SocketEventHandler::setSocketRemovalHandler(SocketRemovalHandler* removeSocketEventHandler){
+    m_removeSocketEventHandler = removeSocketEventHandler;
+}
+
+void SocketEventHandler::startPolling(){
+    while (m_continuePolling){
         int event_count = epoll_wait(m_epollFileDescriptor, m_events, MAX_EVENTS, 10000);
-        if(event_count <= 0 )
-        {
+        if(event_count <= 0 ){
             continue;
         }
-        for (int i = 0; i < event_count; i++)
-        {
+        std::cout << "count: "<< event_count << std::endl;
+        for (int i = 0; i < event_count; i++){
             EventStorePointer* eventStorePointer = static_cast<EventStorePointer*> (m_events[i].data.ptr);
-
-            if(eventStorePointer != NULL) {
+            if (m_events[i].events & EPOLLRDHUP){
+                std::cout << "Socket closed" << std::endl;
+                if(m_removeSocketEventHandler != NULL)
+                    m_removeSocketEventHandler->removeSocket(eventStorePointer);
+            }
+            else if(eventStorePointer != NULL) {
                 handleEvent(eventStorePointer);
             }
         }
@@ -117,5 +122,5 @@ void SocketEventHandler::handleEvent(EventStorePointer* eventStorePointer)
     }
 
     if(m_eventDispatcher != NULL)
-        m_eventDispatcher->handleEvent(eventStorePointer);
+        m_eventDispatcher->handleIOEvent(eventStorePointer);
 }

@@ -7,6 +7,7 @@
 #include <netinet/in.h>
 #include <sys/epoll.h>
 #include "CommonDefinition.h"
+#include "SocketOperationsHandler.h"
 
 class SocketDetails {
 
@@ -26,17 +27,18 @@ class EventStorePointer : public SocketDetails {
 public:
     void* m_parameters;
     void* m_socketEventHandler;
+
+    SocketOperationsHandler* m_socketOperationHandler;
     std::mutex m_socketMutex;
 
 //    SSL* m_pSSL;
-    EventStorePointer() : m_parameters(nullptr),m_socketEventHandler(nullptr) {
+    EventStorePointer() : m_parameters(nullptr),m_socketEventHandler(nullptr),m_socketOperationHandler(nullptr) {
     }
 
     EventStorePointer(const SocketDetails& details, void* parameters = nullptr)
-            : SocketDetails(details), m_parameters(parameters) {
+            : SocketDetails(details), m_parameters(parameters),m_socketEventHandler(nullptr),m_socketOperationHandler(nullptr) {
 
     }
-
 
     EventStorePointer& operator=(const SocketDetails& details) {
         if (this != &details) {
@@ -49,5 +51,33 @@ public:
             m_epollEvent = details.m_epollEvent;
         }
         return *this;
+    }
+
+    void setSocketHandler(SocketOperationsHandler* socketOperationsHandler) {
+        m_socketOperationHandler = socketOperationsHandler;
+    }
+
+    bool initConnection() {
+        return m_socketOperationHandler->initConnection(this);
+    }
+
+    ssize_t sendData(std::string& data) {
+        return m_socketOperationHandler->sendData(this, data);
+    }
+
+    ssize_t receiveData(std::string& data) {
+        return m_socketOperationHandler->receiveData(this, data);
+    }
+
+    ssize_t receivePartialData(int dataSize, std::string& data) {
+        return m_socketOperationHandler->receivePartialData(this, dataSize, data);
+    }
+
+    ssize_t getAvailableDataInSocket() {
+        return m_socketOperationHandler->getAvailableDataInSocket(this);
+    }
+
+    void closeConnection() {
+        m_socketOperationHandler->closeConnection(this);
     }
 };

@@ -5,21 +5,26 @@
 #pragma once
 #include "../common/CommonDefinition.h"
 #include "../threadpool/ThreadPool.h"
-#include "../datatrasaction/SocketOperationsHandler.h"
+#include "../common/SocketOperationsHandler.h"
 #include "../common/EventDispatcher.h"
 
 class IOWorkerThreadHandler : public EventDispatcher {
+public:
     IOWorkerThreadHandler(size_t numThreads);
     ~IOWorkerThreadHandler();
 
 
-    void handleEvent(EventStorePointer* eventStorePointer);
-
     void handleIOEvent(EventStorePointer* eventStorePointer);
+    void setTaskFunction(const std::function<void(EventStorePointer*)>& taskFunction);
+
+private:
+    void handleIOTask(EventStorePointer* eventStorePointer); //,SocketOperationsHandler* socketOperationHandler
+
 
 private:
     ThreadPool m_threadPool;
-    SocketOperationsHandler* m_socketOperationHandler;
+    std::function<void(EventStorePointer*)> m_taskFunction;
+
 };
 
 

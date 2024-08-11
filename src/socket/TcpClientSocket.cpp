@@ -28,7 +28,7 @@ bool TcpClientSocket::createClientSocketAndStartReceiving(){
 }
 
 bool TcpClientSocket::sendData(){
-    std::string data = "test";
+    std::string data = "test data 1 2 3 45";
     ssize_t bytes_sent = send(m_socketDetails.m_socketId, data.c_str(), data.size(), 0);
     if (bytes_sent < 0) {
         std::cerr << "Error sending data" << std::endl;
@@ -40,6 +40,11 @@ bool TcpClientSocket::sendData(){
 
 void TcpClientSocket::socketAcceptThread(){
     m_socketEventHandler.startPolling();
+}
+bool TcpClientSocket::closeSocket(){
+    m_socketEventHandler.stopPolling();
+    close(m_socketDetails.m_socketId);
+    return true;
 }
 
 

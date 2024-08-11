@@ -14,6 +14,7 @@
 TcpServerSocket::TcpServerSocket(const std::string &serverIp, int serverPort,int numCoresInProcessor)
     : m_serverIP(serverIp), m_serverPort(serverPort),m_eventScheduler(numCoresInProcessor){
     m_socketEventHandler.setEventDispatcherPtr(this);
+    m_eventScheduler.setSocketRemovalHandler(this);
 }
 
 const std::string &TcpServerSocket::getServerIp() const {
@@ -44,7 +45,7 @@ void TcpServerSocket::closeServerSocket(){
     }
 }
 
-void TcpServerSocket::handleEvent(EventStorePointer* eventStorePointer)
+void TcpServerSocket::handleIOEvent(EventStorePointer* eventStorePointer)
 {
     //Secured area
     std::unique_lock<std::mutex> lock(clientEventStoresMutex);
@@ -57,11 +58,16 @@ void TcpServerSocket::handleEvent(EventStorePointer* eventStorePointer)
     std::cout << "From IP: "<< ipStr << " Client IP:" << ipStr <<  " Socket ID:" << clientSocketId  << " Port:" << clientPort << std::endl;
 
 
+
+    //Set non blocking
+    m_socketHandler.setNonBlocking(clientSocketId);
+
     //Storing in the map
     auto clientEventStore = std::make_unique<EventStorePointer>(clientSocketDetails);
     clientEventStore->m_socketId = clientSocketId;
     clientEventStore->m_strClientSocketAddress = ipStr;
     clientEventStore->m_eventSourcePort = clientPort;
+    clientEventStore->setSocketHandler(m_socketOperationHandler);
     clientEventStores[clientSocketId] = std::move(clientEventStore);
 
 
@@ -85,8 +91,7 @@ void TcpServerSocket::removeSocket(EventStorePointer* eventStorePointer){
 
 
 
-bool TcpServerSocket::createServerSocketAndStartReceiving()
-{
+bool TcpServerSocket::createServerSocketAndStartReceiving(){
     int socketId = m_socketHandler.createServerSocket(m_serverIP,std::to_string(m_serverPort),m_socketDetails);
     if(socketId < 0)
         return false;
@@ -96,5 +101,14 @@ bool TcpServerSocket::createServerSocketAndStartReceiving()
     return true;
 }
 
+void TcpServerSocket::setEventDispatcherForIOEvent(EventDispatcher* eventDispatcher){
+    m_eventScheduler.setEventDispatcherPtr(eventDispatcher);
+}
 
+void TcpServerSocket::startReceivingConnection(){
+    m_eventScheduler.startAllEventHandler();
+}
 
+void TcpServerSocket::setSocketOperationHandler(SocketOperationsHandler* socketOperationHandler){
+    m_socketOperationHandler = socketOperationHandler;
+}

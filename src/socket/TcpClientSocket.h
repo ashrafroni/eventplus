@@ -21,6 +21,7 @@ public:
     int CreateConnection();
     bool createClientSocketAndStartReceiving();
     bool sendData();
+    bool closeSocket();
 
 public:
     void socketAcceptThread();
