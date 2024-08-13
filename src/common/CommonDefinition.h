@@ -26,3 +26,11 @@ enum SocketStatus
     SocketType_Data_incoming,
     SocketType_Data_read_Completed
 };
+
+enum EventType
+{
+    EventTypeBlank = 0,
+    EventTypeNewConnection,
+    EventTypeClosedConnection,
+    EventTypeIncomingData
+};

@@ -8,10 +8,10 @@
 #include "../common/SocketDetails.h"
 #include "../common/SocketOperationsHandler.h"
 
-class NormalSocketHandler : public SocketOperationsHandler {
+class TCPSocketHandler : public SocketOperationsHandler {
 public:
-    NormalSocketHandler();
-    ~NormalSocketHandler();
+    TCPSocketHandler();
+    ~TCPSocketHandler();
 
     bool initConnection(EventStorePointer* eventStorePointer);
     ssize_t sendData(EventStorePointer* eventStorePointer,std::string& data);

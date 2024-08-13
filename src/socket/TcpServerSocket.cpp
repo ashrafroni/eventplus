@@ -74,12 +74,15 @@ void TcpServerSocket::handleIOEvent(EventStorePointer* eventStorePointer)
     //Adding in the epoll
     EventStorePointer* rawPointer = clientEventStores[clientSocketId].get();
     m_eventScheduler.addSocket(rawPointer);
+    rawPointer->m_eventType = EventTypeNewConnection;
 }
 
 void TcpServerSocket::removeSocket(EventStorePointer* eventStorePointer){
     std::unique_lock<std::mutex> lock(clientEventStoresMutex);
-    int clientSocketId = eventStorePointer->m_socketId;
 
+    eventStorePointer->m_eventType = EventTypeNewConnection;
+
+    int clientSocketId = eventStorePointer->m_socketId;
     SocketEventHandler* socketEventHandler = static_cast<SocketEventHandler*>(eventStorePointer->m_socketEventHandler);
     if(socketEventHandler != NULL){
         socketEventHandler->removeSocket(eventStorePointer);
@@ -111,4 +114,7 @@ void TcpServerSocket::startReceivingConnection(){
 
 void TcpServerSocket::setSocketOperationHandler(SocketOperationsHandler* socketOperationHandler){
     m_socketOperationHandler = socketOperationHandler;
+}
+void TcpServerSocket::setEventReceiver(EventReceiver* eventReceiver){
+    m_eventReceiver = eventReceiver;
 }
