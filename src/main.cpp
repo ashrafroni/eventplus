@@ -2,7 +2,7 @@
 #include "socket/TcpServerSocket.h"
 #include "socket/TcpClientSocket.h"
 #include "IOWorkerThread/IOWorkerThreadHandler.h"
-#include "datatrasaction/NormalSocketHandler.h"
+#include "datatrasaction/TCPSocketHandler.h"
 #include<chrono>
 #include<thread>
 
@@ -25,7 +25,7 @@ int main() {
     //Option to add block IP
 
     IOWorkerThreadHandler ioWorkerThreadHandler(numCores);
-    NormalSocketHandler* normalSocketHandler = new NormalSocketHandler();
+    TCPSocketHandler* normalSocketHandler = new TCPSocketHandler();
 //    ioWorkerThreadHandler.setSocketOperationHandler(normalSocketHandler);
 
     TcpServerSocket tcpServerSocket("127.0.0.1",8089,numCores);

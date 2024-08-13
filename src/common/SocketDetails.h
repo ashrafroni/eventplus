@@ -27,16 +27,16 @@ class EventStorePointer : public SocketDetails {
 public:
     void* m_parameters;
     void* m_socketEventHandler;
-
+    EventType m_eventType;
     SocketOperationsHandler* m_socketOperationHandler;
     std::mutex m_socketMutex;
 
 //    SSL* m_pSSL;
-    EventStorePointer() : m_parameters(nullptr),m_socketEventHandler(nullptr),m_socketOperationHandler(nullptr) {
+    EventStorePointer() : m_parameters(nullptr),m_socketEventHandler(nullptr),m_socketOperationHandler(nullptr),m_eventType(EventTypeBlank) {
     }
 
     EventStorePointer(const SocketDetails& details, void* parameters = nullptr)
-            : SocketDetails(details), m_parameters(parameters),m_socketEventHandler(nullptr),m_socketOperationHandler(nullptr) {
+            : SocketDetails(details), m_parameters(parameters),m_socketEventHandler(nullptr),m_socketOperationHandler(nullptr),m_eventType(EventTypeBlank) {
 
     }
 

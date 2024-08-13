@@ -11,6 +11,7 @@
 #include "SocketHandler.h"
 #include "../networkevent/EventScheduler.h"
 #include "../common/SocketRemovalHandler.h"
+#include "../common/EventReceiver.h"
 #include <thread>
 #include <sys/socket.h>
 #include <unordered_map>
@@ -36,6 +37,8 @@ public:
     void setEventDispatcherForIOEvent(EventDispatcher* eventDispatcher);
     void setSocketOperationHandler(SocketOperationsHandler* socketOperationHandler);
 
+    void setEventReceiver(EventReceiver* eventReceiver);
+
 public:
     void socketAcceptThread();
 
@@ -53,6 +56,7 @@ private:
     std::unordered_map<int, std::unique_ptr<EventStorePointer>> clientEventStores;
     std::mutex clientEventStoresMutex;
     SocketOperationsHandler* m_socketOperationHandler;
+    EventReceiver* m_eventReceiver;
 };
 
 

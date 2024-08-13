@@ -4,21 +4,21 @@
 
 #include <cstring>
 #include <unistd.h>
-#include "NormalSocketHandler.h"
+#include "TCPSocketHandler.h"
 #include <sys/ioctl.h>
 
 
-NormalSocketHandler::NormalSocketHandler(){
+TCPSocketHandler::TCPSocketHandler(){
 
 }
-NormalSocketHandler::~NormalSocketHandler(){
+TCPSocketHandler::~TCPSocketHandler(){
 
 }
-bool NormalSocketHandler::initConnection(EventStorePointer* eventStorePointer){
+bool TCPSocketHandler::initConnection(EventStorePointer* eventStorePointer){
     return true;
 }
 
-ssize_t NormalSocketHandler::sendData(EventStorePointer* eventStorePointer, std::string& data){
+ssize_t TCPSocketHandler::sendData(EventStorePointer* eventStorePointer, std::string& data){
     ssize_t totalSent = 0;
 
     std::lock_guard<std::mutex> lock(eventStorePointer->m_socketMutex);
@@ -48,7 +48,7 @@ ssize_t NormalSocketHandler::sendData(EventStorePointer* eventStorePointer, std:
 
 
 
-ssize_t NormalSocketHandler::receiveData(EventStorePointer* eventStorePointer, std::string& data){
+ssize_t TCPSocketHandler::receiveData(EventStorePointer* eventStorePointer, std::string& data){
     std::vector<char> bufferDataRead;
     std::lock_guard<std::mutex> lock(eventStorePointer->m_socketMutex);
     char buffer[1024];
@@ -84,7 +84,7 @@ ssize_t NormalSocketHandler::receiveData(EventStorePointer* eventStorePointer, s
 }
 
 
-ssize_t NormalSocketHandler::getAvailableDataInSocket(EventStorePointer* eventStorePointer){
+ssize_t TCPSocketHandler::getAvailableDataInSocket(EventStorePointer* eventStorePointer){
     ssize_t bytesAvailable;
     if (ioctl(eventStorePointer->m_socketId, FIONREAD, &bytesAvailable) == -1) {
         perror("ioctl FIONREAD");
@@ -94,7 +94,7 @@ ssize_t NormalSocketHandler::getAvailableDataInSocket(EventStorePointer* eventSt
     return bytesAvailable;
 }
 
-ssize_t NormalSocketHandler::receivePartialData(EventStorePointer* eventStorePointer, int dataSize, std::string& data) {
+ssize_t TCPSocketHandler::receivePartialData(EventStorePointer* eventStorePointer, int dataSize, std::string& data) {
     std::vector<char> buffer(dataSize);
     ssize_t totalBytesRead = 0;
 
@@ -130,6 +130,6 @@ ssize_t NormalSocketHandler::receivePartialData(EventStorePointer* eventStorePoi
 
     return totalBytesRead;
 }
-void NormalSocketHandler::closeConnection(EventStorePointer* eventStorePointer){
+void TCPSocketHandler::closeConnection(EventStorePointer* eventStorePointer){
 
 }
