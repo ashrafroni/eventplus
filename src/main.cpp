@@ -18,19 +18,10 @@ int main() {
     }
 
 
-
-    //Server IP port
-    //Server port
-    //Get Connection event
-    //Option to add block IP
-
-    IOWorkerThreadHandler ioWorkerThreadHandler(numCores);
-    TCPSocketHandler* normalSocketHandler = new TCPSocketHandler();
-//    ioWorkerThreadHandler.setSocketOperationHandler(normalSocketHandler);
-
+    //Destructor and closing all the socket.
+    TCPSocketHandler* tcpSocketHandler = new TCPSocketHandler();
     TcpServerSocket tcpServerSocket("127.0.0.1",8089,numCores);
-    tcpServerSocket.setEventDispatcherForIOEvent(&ioWorkerThreadHandler);
-    tcpServerSocket.setSocketOperationHandler(normalSocketHandler);
+    tcpServerSocket.setSocketOperationHandler(tcpSocketHandler);
     tcpServerSocket.startReceivingConnection();
     tcpServerSocket.createServerSocketAndStartReceiving();
 
@@ -44,13 +35,8 @@ int main() {
     std::this_thread::sleep_for(std::chrono::seconds(2));
     tcpClientSocket.sendData();
     std::this_thread::sleep_for(std::chrono::seconds(5));
-//    tcpClientSocket.closeSocket();
-//    for(int i = 0; i < 7; i++){
-//        //std::cout<< "sending again:" << std::endl;
-//        tcpClientSocket.sendData();
-//        std::this_thread::sleep_for(std::chrono::seconds(2));
-//    }
-//    tcpClientSocket.sendData();
+    tcpClientSocket.closeSocket();
+
     while(true){
         std::cout<< "Waiting:" << std::endl;
         std::this_thread::sleep_for(std::chrono::seconds(5));

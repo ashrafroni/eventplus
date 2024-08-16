@@ -8,13 +8,19 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-
-
-
 TcpServerSocket::TcpServerSocket(const std::string &serverIp, int serverPort,int numCoresInProcessor)
     : m_serverIP(serverIp), m_serverPort(serverPort),m_eventScheduler(numCoresInProcessor){
     m_socketEventHandler.setEventDispatcherPtr(this);
     m_eventScheduler.setSocketRemovalHandler(this);
+    ioWorkerThreadHandler = std::make_unique<IOWorkerThreadHandler>(numCoresInProcessor);
+    m_callBackFunction = std::bind(&TcpServerSocket::handleCallBackEvent, this, std::placeholders::_1);
+    ioWorkerThreadHandler->setTaskFunction(m_callBackFunction);
+}
+
+TcpServerSocket::~TcpServerSocket(){
+    m_eventScheduler.stopAllPollingAndThread();
+    m_socketEventHandler.stopEventThread();
+    closeServerSocket();
 }
 
 const std::string &TcpServerSocket::getServerIp() const {
@@ -68,28 +74,37 @@ void TcpServerSocket::handleIOEvent(EventStorePointer* eventStorePointer)
     clientEventStore->m_strClientSocketAddress = ipStr;
     clientEventStore->m_eventSourcePort = clientPort;
     clientEventStore->setSocketHandler(m_socketOperationHandler);
-    clientEventStores[clientSocketId] = std::move(clientEventStore);
+
 
 
     //Adding in the epoll
-    EventStorePointer* rawPointer = clientEventStores[clientSocketId].get();
-    m_eventScheduler.addSocket(rawPointer);
+    EventStorePointer* rawPointer = clientEventStore.get();
     rawPointer->m_eventType = EventTypeNewConnection;
+    m_eventScheduler.addSocket(rawPointer);
+    clientEventStores[clientSocketId] = std::move(clientEventStore);
+    std::cout << "EventTypeNewConnection:"  << std::endl;
+    //Add call back thread for
+    ioWorkerThreadHandler->handleIOEvent(rawPointer);
 }
 
 void TcpServerSocket::removeSocket(EventStorePointer* eventStorePointer){
     std::unique_lock<std::mutex> lock(clientEventStoresMutex);
 
-    eventStorePointer->m_eventType = EventTypeNewConnection;
-
+//    Remove socket from the epoll and assign the removing task to the IO call back thread.
+    eventStorePointer->m_eventType = EventTypeClosedConnection;
+    std::cout << "EventTypeClosedConnection:"  << std::endl;
     int clientSocketId = eventStorePointer->m_socketId;
     SocketEventHandler* socketEventHandler = static_cast<SocketEventHandler*>(eventStorePointer->m_socketEventHandler);
     if(socketEventHandler != NULL){
+        //Remove from epoll
         socketEventHandler->removeSocket(eventStorePointer);
+        //Close the socket so that no network event comes
         close(clientSocketId);
     }
+    //Add call back
+    ioWorkerThreadHandler->handleIOEvent(eventStorePointer);
 
-    clientEventStores.erase(clientSocketId);
+//    clientEventStores.erase(clientSocketId);
 }
 
 
@@ -104,11 +119,24 @@ bool TcpServerSocket::createServerSocketAndStartReceiving(){
     return true;
 }
 
+void TcpServerSocket::handleCallBackEvent(EventStorePointer* eventStorePointer){
+    std::cout << "handleCallBackEvent:" << eventStorePointer->m_eventType << std::endl;
+    if(eventStorePointer->m_eventType == EventTypeIncomingData){
+        int availabledata = eventStorePointer->getAvailableDataInSocket();
+        std::cout << "handleCallBackEvent:" << availabledata << std::endl;
+        std::string incomingData;
+        eventStorePointer->receiveData(incomingData);
+        std::cout << "incomingData:" << incomingData << std::endl;
+    }
+}
+
 void TcpServerSocket::setEventDispatcherForIOEvent(EventDispatcher* eventDispatcher){
-    m_eventScheduler.setEventDispatcherPtr(eventDispatcher);
+
+//    m_eventScheduler.setEventDispatcherPtr(eventDispatcher);
 }
 
 void TcpServerSocket::startReceivingConnection(){
+    m_eventScheduler.setEventDispatcherPtr(ioWorkerThreadHandler.get());
     m_eventScheduler.startAllEventHandler();
 }
 

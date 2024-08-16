@@ -3,6 +3,7 @@
 //
 
 #include "SocketEventHandler.h"
+#include <sys/eventfd.h>
 
 
 SocketEventHandler::SocketEventHandler() {
@@ -28,6 +29,12 @@ void SocketEventHandler::createEpoll()
         return;
     }
     m_continuePolling = true;
+
+//    int event_fd = eventfd(0, EFD_NONBLOCK);
+//    if (event_fd == -1) {
+//        perror("eventfd");
+//        exit(EXIT_FAILURE);
+//    }
 }
 
 
@@ -112,8 +119,8 @@ void SocketEventHandler::startPolling(){
 void SocketEventHandler::stopPolling()
 {
     m_continuePolling = false;
-}
 
+}
 
 void SocketEventHandler::handleEvent(EventStorePointer* eventStorePointer)
 {
@@ -121,6 +128,8 @@ void SocketEventHandler::handleEvent(EventStorePointer* eventStorePointer)
         return;
     }
 
-    if(m_eventDispatcher != NULL)
+    if(m_eventDispatcher != NULL){
+        eventStorePointer->m_eventType = EventTypeIncomingData;
         m_eventDispatcher->handleIOEvent(eventStorePointer);
+    }
 }
