@@ -15,8 +15,7 @@ IOWorkerThreadHandler::~IOWorkerThreadHandler(){
 
 void IOWorkerThreadHandler::handleIOEvent(EventStorePointer* eventStorePointer){
 
-    std::function<void(EventStorePointer*)> taskFunction = m_taskFunction;
-    m_threadPool.enqueueTask(eventStorePointer,taskFunction);
+    m_threadPool.enqueueTask(eventStorePointer,m_taskFunction);
 }
 
 void IOWorkerThreadHandler::setTaskFunction(const std::function<void(EventStorePointer*)>& taskFunction){

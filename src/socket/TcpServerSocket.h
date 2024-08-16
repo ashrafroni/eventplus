@@ -12,6 +12,7 @@
 #include "../networkevent/EventScheduler.h"
 #include "../common/SocketRemovalHandler.h"
 #include "../common/EventReceiver.h"
+#include "../IOWorkerThread/IOWorkerThreadHandler.h"
 #include <thread>
 #include <sys/socket.h>
 #include <unordered_map>
@@ -20,6 +21,7 @@ class TcpServerSocket : public EventDispatcher,SocketRemovalHandler {
 
 public:
     TcpServerSocket(const std::string &serverIp, int serverPort,int numCoresInProcessor);
+    ~TcpServerSocket();
 
     const std::string &getServerIp() const;
     void setServerIp(const std::string &serverIp);
@@ -27,12 +29,18 @@ public:
     void setServerPort(int serverPort);
 
 //    int createServerSocket();
+
     void closeServerSocket();
 
     void startReceivingConnection();
 
     bool createServerSocketAndStartReceiving();
+    //Handle new client socket
     void handleIOEvent(EventStorePointer* eventStorePointer);
+
+    //Handle Call back event from IOWorker Thread pool
+    void handleCallBackEvent(EventStorePointer* eventStorePointer);
+
     void removeSocket(EventStorePointer* eventStorePointer);
     void setEventDispatcherForIOEvent(EventDispatcher* eventDispatcher);
     void setSocketOperationHandler(SocketOperationsHandler* socketOperationHandler);
@@ -57,6 +65,8 @@ private:
     std::mutex clientEventStoresMutex;
     SocketOperationsHandler* m_socketOperationHandler;
     EventReceiver* m_eventReceiver;
+    std::unique_ptr<IOWorkerThreadHandler> ioWorkerThreadHandler;
+    std::function<void(EventStorePointer*)> m_callBackFunction;
 };
 
 

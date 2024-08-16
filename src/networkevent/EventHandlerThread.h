@@ -13,6 +13,7 @@ public:
     ~EventHandlerThread();
 
     void startEventReceiverThread();
+    void stopEventThread();
 
 private:
     void startReceivingEvent();

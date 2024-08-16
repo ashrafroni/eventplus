@@ -23,7 +23,7 @@ public:
     bool addSocket(EventStorePointer* eventStorePointer);
     bool removeSocket(EventStorePointer* eventStorePointer);
     void handleEvent(EventStorePointer* eventStorePointer);
-//    bool removeSocket(int socketId);
+    bool removeSocket(int socketId);
 
     void startPolling();
     void stopPolling();
