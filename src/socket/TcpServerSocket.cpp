@@ -2,9 +2,8 @@
 // Created by Ashraf on 7/4/2024.
 //
 
-
-#include <arpa/inet.h>
 #include "TcpServerSocket.h"
+#include <arpa/inet.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
@@ -18,10 +17,14 @@ TcpServerSocket::TcpServerSocket(const std::string &serverIp, int serverPort,int
 }
 
 TcpServerSocket::~TcpServerSocket(){
-    m_eventScheduler.stopAllPollingAndThread();
+
+}
+void TcpServerSocket::stopPolling(){
     m_socketEventHandler.stopEventThread();
+    m_eventScheduler.stopAllPollingAndThread();
     closeServerSocket();
 }
+
 
 const std::string &TcpServerSocket::getServerIp() const {
     return m_serverIP;
@@ -44,8 +47,11 @@ void TcpServerSocket::socketAcceptThread(){
     m_socketEventHandler.startPolling();
 }
 
+
 void TcpServerSocket::closeServerSocket(){
     if (m_serverSocketID != -1) {
+        std::cout << "closeServerSocket:" << m_eventStore->m_socketId << std::endl;
+
         m_socketEventHandler.removeSocket(m_eventStore.get());
         close(m_serverSocketID);
     }
@@ -55,6 +61,7 @@ void TcpServerSocket::handleIOEvent(EventStorePointer* eventStorePointer)
 {
     //Secured area
     std::unique_lock<std::mutex> lock(clientEventStoresMutex);
+
     SocketDetails clientSocketDetails;
     socklen_t len = sizeof(clientSocketDetails.m_eventSourceAddress);
     int clientSocketId = accept(eventStorePointer->m_socketId, (struct sockaddr*)&clientSocketDetails.m_eventSourceAddress, &len);
@@ -82,7 +89,7 @@ void TcpServerSocket::handleIOEvent(EventStorePointer* eventStorePointer)
     rawPointer->m_eventType = EventTypeNewConnection;
     m_eventScheduler.addSocket(rawPointer);
     clientEventStores[clientSocketId] = std::move(clientEventStore);
-    std::cout << "EventTypeNewConnection:"  << std::endl;
+//    std::cout << "EventTypeNewConnection:"  << std::endl;
     //Add call back thread for
     ioWorkerThreadHandler->handleIOEvent(rawPointer);
 }
@@ -92,7 +99,7 @@ void TcpServerSocket::removeSocket(EventStorePointer* eventStorePointer){
 
 //    Remove socket from the epoll and assign the removing task to the IO call back thread.
     eventStorePointer->m_eventType = EventTypeClosedConnection;
-    std::cout << "EventTypeClosedConnection:"  << std::endl;
+//    std::cout << "EventTypeClosedConnection:"  << std::endl;
     int clientSocketId = eventStorePointer->m_socketId;
     SocketEventHandler* socketEventHandler = static_cast<SocketEventHandler*>(eventStorePointer->m_socketEventHandler);
     if(socketEventHandler != NULL){
@@ -120,13 +127,26 @@ bool TcpServerSocket::createServerSocketAndStartReceiving(){
 }
 
 void TcpServerSocket::handleCallBackEvent(EventStorePointer* eventStorePointer){
-    std::cout << "handleCallBackEvent:" << eventStorePointer->m_eventType << std::endl;
+//    std::cout << "handleCallBackEvent:" << eventStorePointer->m_eventType << std::endl;
     if(eventStorePointer->m_eventType == EventTypeIncomingData){
-        int availabledata = eventStorePointer->getAvailableDataInSocket();
-        std::cout << "handleCallBackEvent:" << availabledata << std::endl;
-        std::string incomingData;
-        eventStorePointer->receiveData(incomingData);
-        std::cout << "incomingData:" << incomingData << std::endl;
+        if(m_eventReceiver != NULL)
+            m_eventReceiver->dataEvent(eventStorePointer);
+    }else if(eventStorePointer->m_eventType == EventTypeNewConnection){
+        if(m_eventReceiver != NULL)
+            m_eventReceiver->newConnectionEvent(eventStorePointer);
+    }else if(eventStorePointer->m_eventType == EventTypeClosedConnection){
+        //Handle the event in the receiver side
+        if(m_eventReceiver != NULL)
+            m_eventReceiver->connectionClosedEvent(eventStorePointer);
+
+        //Remove they map entry so this is locked
+        std::unique_lock<std::mutex> lock(clientEventStoresMutex);
+        int clientSocketIdToRemove = eventStorePointer->m_socketId;
+        auto it = clientEventStores.find(clientSocketIdToRemove);
+        if (it != clientEventStores.end()) {
+//            std::cout << "Removed from the map:" << clientSocketIdToRemove << std::endl;
+            clientEventStores.erase(it);
+        }
     }
 }
 

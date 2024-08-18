@@ -6,6 +6,32 @@
 #include<chrono>
 #include<thread>
 
+
+
+class Ctest : public EventReceiver{
+public:
+    void newConnectionEvent(EventStorePointer* eventStorePointer){
+        std::cout << "newConnectionEvent:" << std::endl;
+    }
+
+    void connectionClosedEvent(EventStorePointer* eventStorePointer){
+        std::cout << "connectionClosedEvent:" << std::endl;
+    }
+
+    void dataEvent(EventStorePointer* eventStorePointer){
+
+
+        int availabledata = eventStorePointer->getAvailableDataInSocket();
+        std::cout << "EventReceiver:" << availabledata << std::endl;
+        std::string incomingData;
+        eventStorePointer->receiveData(incomingData);
+        std::cout << "data:" << incomingData << std::endl;
+    }
+
+};
+
+Ctest g_test;
+
 int main() {
     unsigned int numCores = std::thread::hardware_concurrency();
 
@@ -24,11 +50,14 @@ int main() {
     tcpServerSocket.setSocketOperationHandler(tcpSocketHandler);
     tcpServerSocket.startReceivingConnection();
     tcpServerSocket.createServerSocketAndStartReceiving();
+    tcpServerSocket.setEventReceiver(&g_test);
+
 
     std::cout<< "Waiting before sent:" << std::endl;
     std::this_thread::sleep_for(std::chrono::seconds(5));
     TcpClientSocket tcpClientSocket("127.0.0.1",8089);
     tcpClientSocket.createClientSocketAndStartReceiving();
+
 
     std::cout<< "Waiting before sent:" << std::endl;
     std::cout<< "sending:" << std::endl;
@@ -36,7 +65,7 @@ int main() {
     tcpClientSocket.sendData();
     std::this_thread::sleep_for(std::chrono::seconds(5));
     tcpClientSocket.closeSocket();
-
+    tcpServerSocket.stopPolling();
     while(true){
         std::cout<< "Waiting:" << std::endl;
         std::this_thread::sleep_for(std::chrono::seconds(5));

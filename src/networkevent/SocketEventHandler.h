@@ -36,6 +36,9 @@ public:
     void setEPollEventFlag(uint32_t epollEvent);
 
 private:
+    bool addEventSocket();
+
+private:
     bool m_continuePolling;
     epoll_event m_epollEvent;
     uint32_t m_pollEvent;
@@ -44,6 +47,7 @@ private:
     int m_connectionSource;
     EventDispatcher* m_eventDispatcher;
     SocketRemovalHandler* m_removeSocketEventHandler;
+    EventStorePointer* m_realtimeEventHandleStorePointer;
     std::mutex m_pollMutex;
 };
 

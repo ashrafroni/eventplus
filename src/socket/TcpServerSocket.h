@@ -17,6 +17,7 @@
 #include <sys/socket.h>
 #include <unordered_map>
 
+
 class TcpServerSocket : public EventDispatcher,SocketRemovalHandler {
 
 public:
@@ -46,7 +47,7 @@ public:
     void setSocketOperationHandler(SocketOperationsHandler* socketOperationHandler);
 
     void setEventReceiver(EventReceiver* eventReceiver);
-
+    void stopPolling();
 public:
     void socketAcceptThread();
 
