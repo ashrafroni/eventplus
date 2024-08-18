@@ -5,11 +5,11 @@ set(CMAKE_CXX_STANDARD 17)
 
 add_executable(eventplus
         src/main.cpp
-        src/socket/TcpServerSocket.cpp
         src/socket/UdpServerSocket.cpp
         src/networkevent/SocketEventHandler.cpp
         src/common/SocketDetails.cpp
         src/socket/TcpClientSocket.cpp
+        src/socket/TcpServerSocket.cpp
         src/datatrasaction/TCPSocketHandler.cpp
         src/datatrasaction/TLSSocketHandler.cpp
         src/threadpool/ThreadPool.cpp
