@@ -37,6 +37,7 @@ public:
 
 private:
     bool addEventSocket();
+    bool removeEventSocket();
 
 private:
     bool m_continuePolling;

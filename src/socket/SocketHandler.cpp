@@ -11,6 +11,16 @@
 #include <fcntl.h>
 #include "SocketHandler.h"
 
+
+bool SocketHandler::isSocketClosed(int socketId){
+    int fdStatus = fcntl(socketId, F_GETFD);
+    if (fdStatus == -1) {
+        perror("fcntl: Checking if socket is closed");
+        return true;
+    }
+    return false;
+}
+
 void SocketHandler::setNonBlocking(int socketID) {
     int flags = fcntl(socketID, F_GETFL, 0);
     if (flags == -1) {
