@@ -49,39 +49,14 @@ ssize_t TCPSocketHandler::sendData(EventStorePointer* eventStorePointer, std::st
 
 
 ssize_t TCPSocketHandler::receiveData(EventStorePointer* eventStorePointer, std::string& data){
-    std::vector<char> bufferDataRead;
     std::lock_guard<std::mutex> lock(eventStorePointer->m_socketMutex);
-    char buffer[1024];
-    ssize_t bytesRead;
-    while (true) {
-        bytesRead = read(eventStorePointer->m_socketId, buffer, sizeof(buffer));
-
-        if (bytesRead > 0) {
-            bufferDataRead.insert(bufferDataRead.end(), buffer, buffer + bytesRead);
-        } else if (bytesRead == 0) {
-            // Connection closed by the peer
-            std::cout << "Socket closed by peer" << std::endl;
-            break;
-        } else {
-            std::cout << "error  " << bytesRead  << std::endl;
-            if (errno == EWOULDBLOCK || errno == EAGAIN) {
-                // No more data available for now, but connection is still open
-                std::cout << "No more data available, will wait for more data" << std::endl;
-                break; // or use a mechanism to wait for more data (e.g., epoll, select, etc.)
-            } else if (errno == EINTR) {
-                // Interrupted by a signal, try again
-                continue;
-            } else {
-                // An error occurred
-                std::cerr << "Error reading from socket: " << strerror(errno) << std::endl;
-                throw std::runtime_error("Socket read error");
-            }
-        }
-    }
-
-    data.assign(bufferDataRead.begin(), bufferDataRead.end());
-    return bufferDataRead.size();
+    int availableAmount = getAvailableDataInSocket(eventStorePointer);
+    return receivePartialData(eventStorePointer,availableAmount,data);
 }
+
+
+
+
 
 
 ssize_t TCPSocketHandler::getAvailableDataInSocket(EventStorePointer* eventStorePointer){
@@ -130,6 +105,43 @@ ssize_t TCPSocketHandler::receivePartialData(EventStorePointer* eventStorePointe
 
     return totalBytesRead;
 }
-void TCPSocketHandler::closeConnection(EventStorePointer* eventStorePointer){
 
+void TCPSocketHandler::closeConnection(EventStorePointer* eventStorePointer){
 }
+
+
+
+//ssize_t TCPSocketHandler::receiveData(EventStorePointer* eventStorePointer, std::string& data){
+//    std::vector<char> bufferDataRead;
+//    std::lock_guard<std::mutex> lock(eventStorePointer->m_socketMutex);
+//    char buffer[1024];
+//    ssize_t bytesRead;
+//    while (true) {
+//        std::cout << "Before read  " << eventStorePointer->m_socketId << std::endl;
+//        bytesRead = read(eventStorePointer->m_socketId, buffer, sizeof(buffer));
+//        std::cout << "after read  " << eventStorePointer->m_socketId  << " " << bytesRead << std::endl;
+//        if (bytesRead > 0) {
+//            bufferDataRead.insert(bufferDataRead.end(), buffer, buffer + bytesRead);
+//        } else if (bytesRead == 0) {
+//            break;
+//        } else {
+//            std::cout << "error  " << bytesRead  << std::endl;
+//            std::cerr << "Error reading from socket: " << strerror(errno) << std::endl;
+//            if (errno == EWOULDBLOCK || errno == EAGAIN) {
+//                // No more data available for now, but connection is still open
+//                std::cout << "No more data available, will wait for more data" << std::endl;
+//                break; // or use a mechanism to wait for more data (e.g., epoll, select, etc.)
+//            } else if (errno == EINTR) {
+//                // Interrupted by a signal, try again
+//                continue;
+//            } else {
+//                // An error occurred
+//                std::cerr << "Error reading from socket: " << strerror(errno) << std::endl;
+//                throw std::runtime_error("Socket read error");
+//            }
+//        }
+//    }
+//
+//    data.assign(bufferDataRead.begin(), bufferDataRead.end());
+//    return bufferDataRead.size();
+//}

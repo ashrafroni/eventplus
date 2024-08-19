@@ -30,12 +30,12 @@ public:
     void setServerPort(int serverPort);
 
 //    int createServerSocket();
+//    void setEventDispatcherForIOEvent(EventDispatcher* eventDispatcher);
 
     void closeServerSocket();
-
     void startReceivingConnection();
-
     bool createServerSocketAndStartReceiving();
+
     //Handle new client socket
     void handleIOEvent(EventStorePointer* eventStorePointer);
 
@@ -43,10 +43,11 @@ public:
     void handleCallBackEvent(EventStorePointer* eventStorePointer);
 
     void removeSocket(EventStorePointer* eventStorePointer);
-    void setEventDispatcherForIOEvent(EventDispatcher* eventDispatcher);
+
     void setSocketOperationHandler(SocketOperationsHandler* socketOperationHandler);
 
     void setEventReceiver(EventReceiver* eventReceiver);
+
     void stopPolling();
 public:
     void socketAcceptThread();

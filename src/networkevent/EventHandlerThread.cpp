@@ -17,10 +17,9 @@ void EventHandlerThread::startEventReceiverThread(){
 void EventHandlerThread::stopEventThread(){
     stopPolling();
     if (m_eventHandlerThread && m_eventHandlerThread->joinable()) {
-        m_eventHandlerThread->join();
+        m_eventHandlerThread->detach();
     }
     closeEpoll();
-    std::cout<< "Thread stopped" << std::endl;
 }
 
 EventHandlerThread::EventHandlerThread(){
