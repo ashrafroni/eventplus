@@ -107,6 +107,7 @@ ssize_t TCPSocketHandler::receivePartialData(EventStorePointer* eventStorePointe
 }
 
 void TCPSocketHandler::closeConnection(EventStorePointer* eventStorePointer){
+    close(eventStorePointer->m_socketId);
 }
 
 

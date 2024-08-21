@@ -51,6 +51,7 @@ public:
     void stopPolling();
 public:
     void socketAcceptThread();
+    void closeAllClientSocket();
 
 private:
     std::string m_serverIP;
