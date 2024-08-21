@@ -23,9 +23,16 @@ void TcpServerSocket::stopPolling(){
     closeServerSocket();
     m_socketEventHandler.stopEventThread();
     m_eventScheduler.stopAllPollingAndThread();
-
+    closeAllClientSocket();
 }
 
+void TcpServerSocket::closeAllClientSocket(){
+
+    for(const auto& [socketid,clientSocket] : clientEventStores){
+        clientSocket->closeConnection();
+    }
+    clientEventStores.clear();
+}
 
 const std::string &TcpServerSocket::getServerIp() const {
     return m_serverIP;
@@ -51,9 +58,11 @@ void TcpServerSocket::socketAcceptThread(){
 
 void TcpServerSocket::closeServerSocket(){
     if (m_serverSocketID != -1) {
-        bool bis = m_socketHandler.isSocketClosed(m_serverSocketID);
-        m_socketEventHandler.removeSocket(m_eventStore.get());
-        close(m_serverSocketID);
+        if(!m_socketHandler.isSocketClosed(m_serverSocketID)) {
+            m_socketEventHandler.removeSocket(m_eventStore.get());
+            m_eventStore->closeConnection();
+        }
+
     }
 }
 
@@ -97,9 +106,9 @@ void TcpServerSocket::removeSocket(EventStorePointer* eventStorePointer){
     eventStorePointer->m_eventType = EventTypeClosedConnection;
 
     int clientSocketId = eventStorePointer->m_socketId;
-    SocketEventHandler* socketEventHandler = static_cast<SocketEventHandler*>(eventStorePointer->m_socketEventHandler);
-    if(socketEventHandler != NULL){
-        socketEventHandler->removeSocket(eventStorePointer);
+    auto* socketEventHandlerSocketRemove = static_cast<SocketEventHandler*>(eventStorePointer->m_socketEventHandler);
+    if(socketEventHandlerSocketRemove != nullptr){
+        socketEventHandlerSocketRemove->removeSocket(eventStorePointer);
 
         //Close the socket so that no network event comes
         close(clientSocketId);
@@ -115,6 +124,7 @@ bool TcpServerSocket::createServerSocketAndStartReceiving(){
     if(socketId < 0)
         return false;
     m_eventStore = std::make_unique<EventStorePointer>(m_socketDetails);
+    m_eventStore->setSocketHandler(m_socketOperationHandler);
     m_socketEventHandler.addSocket(m_eventStore.get());
     m_socketEventHandler.startEventReceiverThread();
     return true;
@@ -122,14 +132,14 @@ bool TcpServerSocket::createServerSocketAndStartReceiving(){
 
 void TcpServerSocket::handleCallBackEvent(EventStorePointer* eventStorePointer){
     if(eventStorePointer->m_eventType == EventTypeIncomingData){
-        if(m_eventReceiver != NULL)
+        if(m_eventReceiver != nullptr)
             m_eventReceiver->dataEvent(eventStorePointer);
     }else if(eventStorePointer->m_eventType == EventTypeNewConnection){
-        if(m_eventReceiver != NULL)
+        if(m_eventReceiver != nullptr)
             m_eventReceiver->newConnectionEvent(eventStorePointer);
     }else if(eventStorePointer->m_eventType == EventTypeClosedConnection){
         //Handle the event in the receiver side
-        if(m_eventReceiver != NULL)
+        if(m_eventReceiver != nullptr)
             m_eventReceiver->connectionClosedEvent(eventStorePointer);
 
         //Remove they map entry so this is locked

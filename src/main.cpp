@@ -19,18 +19,18 @@ public:
     }
 
     void dataEvent(EventStorePointer* eventStorePointer){
-
-
         int availabledata = eventStorePointer->getAvailableDataInSocket();
         std::cout << "EventReceiver:" << availabledata << std::endl;
         std::string incomingData;
         eventStorePointer->receiveData(incomingData);
         std::cout << "data:" << incomingData << std::endl;
     }
-
 };
 
 Ctest g_test;
+
+
+
 
 int main() {
     unsigned int numCores = std::thread::hardware_concurrency();
@@ -63,7 +63,7 @@ int main() {
     std::cout<< "sending:" << std::endl;
     std::this_thread::sleep_for(std::chrono::seconds(2));
     tcpClientSocket.sendData();
-    std::this_thread::sleep_for(std::chrono::seconds(5));
+    std::this_thread::sleep_for(std::chrono::seconds(15));
     tcpClientSocket.closeSocket();
     tcpServerSocket.stopPolling();
     while(true){

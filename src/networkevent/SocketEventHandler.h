@@ -36,8 +36,8 @@ public:
     void setEPollEventFlag(uint32_t epollEvent);
 
 private:
-    bool addEventSocket();
-    bool removeEventSocket();
+//    bool addEventSocket();
+//    bool removeEventSocket();
 
 private:
     bool m_continuePolling;

@@ -17,6 +17,7 @@ public:
 
 private:
     void startReceivingEvent();
+//    void setupSignalHandler();
 private:
     std::unique_ptr<std::thread> m_eventHandlerThread;
 };

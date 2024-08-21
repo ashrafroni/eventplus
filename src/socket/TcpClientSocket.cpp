@@ -4,6 +4,7 @@
 
 #include <netdb.h>
 #include <cstring>
+#include <string>
 #include "TcpClientSocket.h"
 
 
@@ -19,11 +20,8 @@ bool TcpClientSocket::createClientSocketAndStartReceiving(){
         return false;
 
     m_socketDetails.m_socketId = clientSocket;
-
     m_eventStore = std::make_unique<EventStorePointer>(m_socketDetails);
-
     m_socketEventHandler.addSocket(m_eventStore.get());
-
     m_socketEventHandler.startEventReceiverThread();
 }
 
