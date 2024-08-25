@@ -32,6 +32,18 @@ void SocketHandler::setNonBlocking(int socketID) {
     }
 }
 
+void SocketHandler::setBlocking(int socketID) {
+    int flags = fcntl(socketID, F_GETFL, 0);
+    if (flags == -1) {
+        // handle error
+        return;
+    }
+    flags &= ~O_NONBLOCK;
+    if (fcntl(socketID, F_SETFL, flags) == -1) {
+        // handle error
+    }
+}
+
 int SocketHandler::createServerSocket(std::string serverIP, std::string serverPort,SocketDetails& socketDetails)
 {
     int serverSocketID = socket(AF_INET, SOCK_STREAM, 0);

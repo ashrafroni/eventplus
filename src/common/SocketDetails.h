@@ -6,6 +6,7 @@
 
 #include <netinet/in.h>
 #include <sys/epoll.h>
+#include <openssl/ssl.h>
 #include "CommonDefinition.h"
 #include "SocketOperationsHandler.h"
 
@@ -31,7 +32,7 @@ public:
     SocketOperationsHandler* m_socketOperationHandler;
     std::mutex m_socketMutex;
 
-//    SSL* m_pSSL;
+    SSL* m_SSL;
     EventStorePointer() : m_parameters(nullptr),m_socketEventHandler(nullptr),m_socketOperationHandler(nullptr),m_eventType(EventTypeBlank) {
     }
 
