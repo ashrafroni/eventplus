@@ -4,15 +4,15 @@
 
 #pragma once
 
-#include "../common/CommonDefinition.h"
-#include "../common/SocketDetails.h"
-#include "../networkevent/SocketEventHandler.h"
-#include "../networkevent/EventHandlerThread.h"
-#include "SocketHandler.h"
-#include "../networkevent/EventScheduler.h"
-#include "../common/SocketRemovalHandler.h"
-#include "../common/EventReceiver.h"
-#include "../IOWorkerThread/IOWorkerThreadHandler.h"
+#include "../../common/CommonDefinition.h"
+#include "../../common/SocketDetails.h"
+#include "../../networkevent/SocketEventHandler.h"
+#include "../../networkevent/EventHandlerThread.h"
+#include "../SocketHandler.h"
+#include "../../networkevent/EventScheduler.h"
+#include "../../common/SocketRemovalHandler.h"
+#include "../../common/EventReceiver.h"
+#include "../../IOWorkerThread/IOWorkerThreadHandler.h"
 #include <thread>
 #include <sys/socket.h>
 #include <unordered_map>
@@ -29,20 +29,17 @@ public:
     int getServerPort() const;
     void setServerPort(int serverPort);
 
-//    int createServerSocket();
-//    void setEventDispatcherForIOEvent(EventDispatcher* eventDispatcher);
-
     void closeServerSocket();
     void startReceivingConnection();
     bool createServerSocketAndStartReceiving();
 
     //Handle new client socket
-    void handleIOEvent(EventStorePointer* eventStorePointer);
+    void handleIOEvent(EventStorePointer* eventStorePointer) override;
 
     //Handle Call back event from IOWorker Thread pool
     void handleCallBackEvent(EventStorePointer* eventStorePointer);
 
-    void removeSocket(EventStorePointer* eventStorePointer);
+    void removeSocket(EventStorePointer* eventStorePointer) override;
 
     void setSocketOperationHandler(SocketOperationsHandler* socketOperationHandler);
 
@@ -54,10 +51,13 @@ public:
     void closeAllClientSocket();
 
 private:
+    void initializeCallBackFunction();
+
+private:
     std::string m_serverIP;
     int m_serverPort;
     int m_serverSocketID;
-    bool m_bIsActive;
+//    bool m_bIsActive;
     SocketDetails m_socketDetails;
     std::unique_ptr<EventStorePointer> m_eventStore;
     EventHandlerThread m_socketEventHandler;

@@ -12,6 +12,7 @@ public:
     int createServerSocket(std::string serverIP, std::string serverPort,SocketDetails& socketDetails);
     int createClientSocket(std::string serverIP,std::string strServerPort);
     void setNonBlocking(int socketID);
+    void setBlocking(int socketID);
     bool isSocketClosed(int socketId);
 };
 

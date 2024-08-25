@@ -3,7 +3,6 @@
 //
 
 #include "EventHandlerThread.h"
-//#include <csignal>
 
 
 void EventHandlerThread::startReceivingEvent(){
@@ -17,6 +16,7 @@ void EventHandlerThread::startEventReceiverThread(){
 
 
 void EventHandlerThread::stopEventThread(){
+    std::cout << "EventHandlerThread::stopEventThread()" << std::endl;
     stopPolling();
 //    pthread_kill(m_eventHandlerThread->native_handle(), SIGUSR1);
 //    if (m_eventHandlerThread && m_eventHandlerThread->joinable()) {

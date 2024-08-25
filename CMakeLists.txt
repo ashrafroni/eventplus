@@ -5,11 +5,11 @@ set(CMAKE_CXX_STANDARD 17)
 
 add_executable(eventplus
         src/main.cpp
-        src/socket/UdpServerSocket.cpp
+        src/socket/server/UdpServerSocket.cpp
         src/networkevent/SocketEventHandler.cpp
         src/common/SocketDetails.cpp
-        src/socket/TcpClientSocket.cpp
-        src/socket/TcpServerSocket.cpp
+        src/socket/client/TcpClientSocket.cpp
+        src/socket/server/TcpServerSocket.cpp
         src/datatrasaction/TCPSocketHandler.cpp
         src/datatrasaction/TLSSocketHandler.cpp
         src/threadpool/ThreadPool.cpp
@@ -27,9 +27,14 @@ add_executable(eventplus
         src/ssl/SSLCertificateHandler.h
         src/workerthread/OperationExecutorTask.cpp
         src/workerthread/OperationExecutorTask.h
-        src/socket/TLSServerSocket.cpp
-        src/socket/TLSServerSocket.h
+        src/socket/client/TLSClient.cpp
+        src/socket/client/TLSClient.h
 )
 # Link with pthreads
 find_package(Threads REQUIRED)
 target_link_libraries(eventplus PRIVATE Threads::Threads)
+
+# Find and link with OpenSSL
+find_package(OpenSSL REQUIRED)
+
+target_link_libraries(eventplus PRIVATE Threads::Threads OpenSSL::SSL OpenSSL::Crypto)
