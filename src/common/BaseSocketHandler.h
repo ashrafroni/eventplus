@@ -9,9 +9,9 @@
 
 class EventStorePointer;
 
-class SocketOperationsHandler {
+class BaseSocketHandler {
 public:
-//    virtual ~SocketOperationsHandler() = default;
+//    virtual ~BaseSocketHandler() = default;
 
     virtual bool initConnection(EventStorePointer* eventStorePointer) = 0;
     virtual ssize_t sendData(EventStorePointer* eventStorePointer,std::string& data) = 0;

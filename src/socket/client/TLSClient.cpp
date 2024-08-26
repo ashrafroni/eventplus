@@ -13,25 +13,25 @@ TLSClient::~TLSClient() {
     Close();
 }
 
-SSL_CTX* TLSClient::InitCTX() {
+void TLSClient::InitCTX() {
     const SSL_METHOD* method = SSLv23_client_method();  // Use
-    SSL_CTX* ctx = SSL_CTX_new(method);
-    if (ctx == nullptr) {
+    m_ctx = SSL_CTX_new(method);
+    if (m_ctx == nullptr) {
         ERR_print_errors_fp(stderr);
     }
-    return ctx;
+
 }
 
 bool TLSClient::Init() {
     SSL_library_init();
     OpenSSL_add_all_algorithms();
     SSL_load_error_strings();
-    m_ctx = InitCTX();
+    InitCTX();
     return m_ctx != nullptr;
 }
 
 bool TLSClient::CreateSocket() {
-    struct addrinfo hints, *res;
+    struct addrinfo hints{}, *res;
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
@@ -44,20 +44,25 @@ bool TLSClient::CreateSocket() {
     }
 
     for (struct addrinfo *p = res; p != nullptr; p = p->ai_next) {
-        m_socket = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
-        if (m_socket == -1) {
+        m_socketDetails.m_socketId = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
+        if (m_socketDetails.m_socketId == -1) {
             continue;
         }
-        if (connect(m_socket, p->ai_addr, p->ai_addrlen) == 0) {
+        if (connect(m_socketDetails.m_socketId, p->ai_addr, p->ai_addrlen) == 0) {
             freeaddrinfo(res);
             return true;
         }
-        close(m_socket);
-        m_socket = -1;
+        close(m_socketDetails.m_socketId);
+        m_socketDetails.m_socketId = -1;
     }
 
     freeaddrinfo(res);
     return false;
+}
+
+
+void TLSClient::handleIOEvent(EventStorePointer* eventStorePointer){
+
 }
 
 bool TLSClient::Connect() {
@@ -65,15 +70,17 @@ bool TLSClient::Connect() {
         return false;
     }
 
-    m_ssl = SSL_new(m_ctx);
-    if (m_ssl == nullptr) {
+    m_clientSocket = std::make_unique<EventStorePointer>(m_socketDetails);
+
+    m_clientSocket->m_SSL = SSL_new(m_ctx);
+    if (m_clientSocket->m_SSL == nullptr) {
         std::cerr << "SSL_new() failed" << std::endl;
         return false;
     }
 
-    SSL_set_fd(m_ssl, m_socket);
-    if (SSL_connect(m_ssl) <= 0) {
-        SSL_get_error(m_ssl, -1);
+    SSL_set_fd(m_clientSocket->m_SSL, m_socketDetails.m_socketId);
+    if (SSL_connect(m_clientSocket->m_SSL) <= 0) {
+        SSL_get_error(m_clientSocket->m_SSL, -1);
         ERR_print_errors_fp(stderr);
         return false;
     }
@@ -82,12 +89,12 @@ bool TLSClient::Connect() {
 }
 
 int TLSClient::SendData(const uint8_t* data, int length) {
-    return SSL_write(m_ssl, data, length);
+    return SSL_write(m_clientSocket->m_SSL, data, length);
 }
 
 std::string TLSClient::ReceiveData(int size) {
     std::string data(size, '\0');
-    int bytesRead = SSL_read(m_ssl, &data[0], size);
+    int bytesRead = SSL_read(m_clientSocket->m_SSL, &data[0], size);
     if (bytesRead <= 0) {
         data.clear();
     } else {
@@ -97,14 +104,14 @@ std::string TLSClient::ReceiveData(int size) {
 }
 
 void TLSClient::Close() {
-    if (m_ssl) {
-        SSL_shutdown(m_ssl);
-        SSL_free(m_ssl);
-        m_ssl = nullptr;
+    if (m_clientSocket->m_SSL) {
+        SSL_shutdown(m_clientSocket->m_SSL);
+        SSL_free(m_clientSocket->m_SSL);
+        m_clientSocket->m_SSL = nullptr;
     }
-    if (m_socket != -1) {
-        close(m_socket);
-        m_socket = -1;
+    if (m_socketDetails.m_socketId != -1) {
+        close(m_socketDetails.m_socketId);
+        m_socketDetails.m_socketId = -1;
     }
     if (m_ctx) {
         SSL_CTX_free(m_ctx);

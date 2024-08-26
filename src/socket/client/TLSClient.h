@@ -11,8 +11,10 @@
 #include <openssl/err.h>
 #include <netdb.h>
 #include <unistd.h>
+#include "../SocketHandler.h"
+#include "../../networkevent/EventHandlerThread.h"
 
-class TLSClient {
+class TLSClient : public EventDispatcher{
 public:
     TLSClient(const std::string& address, const std::string& port);
     ~TLSClient();
@@ -22,14 +24,22 @@ public:
     int SendData(const uint8_t* data, int length);
     std::string ReceiveData(int size);
     void Close();
+    void handleIOEvent(EventStorePointer* eventStorePointer) override;
+
+
 
 private:
-    SSL_CTX* InitCTX();
+    void InitCTX();
     bool CreateSocket();
 
     std::string m_address;
     std::string m_port;
     SSL_CTX* m_ctx = nullptr;
-    SSL* m_ssl = nullptr;
-    int m_socket = -1;
+
+
+
+    SocketHandler m_socketHandler;
+    SocketDetails m_socketDetails;
+    std::unique_ptr<EventStorePointer> m_clientSocket;
+    std::unique_ptr<EventHandlerThread> m_socketEventHandler;
 };
