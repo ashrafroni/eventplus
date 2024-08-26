@@ -8,18 +8,41 @@
 #include <unistd.h>
 #include <netdb.h>
 #include <cstring>
+#include <fcntl.h>
 #include "SocketHandler.h"
 
-//void setNonBlocking(int fd) {
-//    int flags = fcntl(fd, F_GETFL, 0);
-//    if (flags == -1) {
-//        perror("fcntl F_GETFL");
-//        return;
-//    }
-//    if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1) {
-//        perror("fcntl F_SETFL");
-//    }
-//}
+
+bool SocketHandler::isSocketClosed(int socketId){
+    int fdStatus = fcntl(socketId, F_GETFD);
+    if (fdStatus == -1) {
+        perror("fcntl: Checking if socket is closed");
+        return true;
+    }
+    return false;
+}
+
+void SocketHandler::setNonBlocking(int socketID) {
+    int flags = fcntl(socketID, F_GETFL, 0);
+    if (flags == -1) {
+        perror("fcntl F_GETFL");
+        return;
+    }
+    if (fcntl(socketID, F_SETFL, flags | O_NONBLOCK) == -1) {
+        perror("fcntl F_SETFL");
+    }
+}
+
+void SocketHandler::setBlocking(int socketID) {
+    int flags = fcntl(socketID, F_GETFL, 0);
+    if (flags == -1) {
+        // handle error
+        return;
+    }
+    flags &= ~O_NONBLOCK;
+    if (fcntl(socketID, F_SETFL, flags) == -1) {
+        // handle error
+    }
+}
 
 int SocketHandler::createServerSocket(std::string serverIP, std::string serverPort,SocketDetails& socketDetails)
 {
@@ -42,7 +65,7 @@ int SocketHandler::createServerSocket(std::string serverIP, std::string serverPo
         close(serverSocketID);
         throw std::runtime_error("Failed to listen on socket");
     }
-
+    setNonBlocking(serverSocketID);
     return serverSocketID;
 }
 
@@ -82,7 +105,7 @@ int SocketHandler::createClientSocket(std::string serverIP,std::string strServer
         std::cerr << "Failed to connect to " << serverIP << std::endl;
         return -1;
     }
-
+    setNonBlocking(sfd);
     return sfd;
 
 }

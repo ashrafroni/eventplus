@@ -4,11 +4,12 @@
 
 #include <netdb.h>
 #include <cstring>
+#include <string>
 #include "TcpClientSocket.h"
 
 
 TcpClientSocket::TcpClientSocket(const std::string &serverIp, int serverPort): m_serverIP(serverIp), m_serverPort(serverPort){
-    m_eventStore = std::make_unique<EventStorePointer>();
+    m_clientSocket = std::make_unique<EventStorePointer>();
 }
 
 
@@ -19,16 +20,25 @@ bool TcpClientSocket::createClientSocketAndStartReceiving(){
         return false;
 
     m_socketDetails.m_socketId = clientSocket;
+    m_clientSocket = std::make_unique<EventStorePointer>(m_socketDetails);
 
-    m_eventStore = std::make_unique<EventStorePointer>(m_socketDetails);
+    if(m_socketEventHandler == nullptr){
+        m_socketEventHandler = std::make_unique<EventHandlerThread>();
+    }
 
-    m_socketEventHandler.addSocket(m_eventStore.get());
+    m_socketEventHandler->addSocket(m_clientSocket.get());
+    m_socketEventHandler->startEventReceiverThread();
+}
 
-    m_socketEventHandler.startEventReceiverThread();
+
+void TcpClientSocket::handleIOEvent(EventStorePointer* eventStorePointer){
+    std::string data;
+    eventStorePointer->receiveData(data);
+    std::cout << data << std::endl;
 }
 
 bool TcpClientSocket::sendData(){
-    std::string data = "test";
+    std::string data = "test data 1 2 3 45";
     ssize_t bytes_sent = send(m_socketDetails.m_socketId, data.c_str(), data.size(), 0);
     if (bytes_sent < 0) {
         std::cerr << "Error sending data" << std::endl;
@@ -39,7 +49,12 @@ bool TcpClientSocket::sendData(){
 }
 
 void TcpClientSocket::socketAcceptThread(){
-    m_socketEventHandler.startPolling();
+    m_socketEventHandler->startPolling();
+}
+bool TcpClientSocket::closeSocket(){
+    m_socketEventHandler->stopPolling();
+    close(m_socketDetails.m_socketId);
+    return true;
 }
 
 
@@ -47,5 +62,11 @@ const std::string &TcpClientSocket::getServerIp() const{
     return m_serverIP;
 }
 void TcpClientSocket::setServerIp(const std::string &serverIp){
+    m_serverIP = serverIp;
+}
 
+
+
+void TcpClientSocket::setSocketEventHandler(const std::unique_ptr<EventHandlerThread> &socketEventHandler) {
+//    m_socketEventHandler = socketEventHandler;
 }

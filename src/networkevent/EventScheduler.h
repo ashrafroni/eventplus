@@ -17,7 +17,8 @@ public:
     bool addSocket(EventStorePointer* eventStorePointer);
     void startAllEventHandler();
     void setEventDispatcherPtr(EventDispatcher* eventDispatcher);
-
+    void setSocketRemovalHandler(SocketRemovalHandler* removeSocketEventHandler);
+    void stopAllPollingAndThread();
 private:
     std::vector<std::unique_ptr<EventHandlerThread>> m_socketEventHandlers;
     int m_currentIndex;

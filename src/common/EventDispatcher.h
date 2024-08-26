@@ -9,8 +9,6 @@
 
 class EventDispatcher {
 public:
-    virtual ~EventDispatcher() = default;
-
-    virtual void handleEvent(EventStorePointer* eventStorePointer) = 0;
+    virtual void handleIOEvent(EventStorePointer* eventStorePointer) = 0;
 };
 

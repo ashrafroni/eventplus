@@ -13,9 +13,11 @@ public:
     ~EventHandlerThread();
 
     void startEventReceiverThread();
+    void stopEventThread();
 
 private:
     void startReceivingEvent();
+//    void setupSignalHandler();
 private:
     std::unique_ptr<std::thread> m_eventHandlerThread;
 };
