@@ -8,7 +8,7 @@
 #include <sys/epoll.h>
 #include <openssl/ssl.h>
 #include "CommonDefinition.h"
-#include "SocketOperationsHandler.h"
+#include "BaseSocketHandler.h"
 
 class SocketDetails {
 
@@ -29,7 +29,7 @@ public:
     void* m_parameters;
     void* m_socketEventHandler;
     EventType m_eventType;
-    SocketOperationsHandler* m_socketOperationHandler;
+    BaseSocketHandler* m_socketOperationHandler;
     std::mutex m_socketMutex;
 
     SSL* m_SSL;
@@ -54,7 +54,7 @@ public:
         return *this;
     }
 
-    void setSocketHandler(SocketOperationsHandler* socketOperationsHandler) {
+    void setSocketHandler(BaseSocketHandler* socketOperationsHandler) {
         m_socketOperationHandler = socketOperationsHandler;
     }
 

@@ -5,7 +5,7 @@
 #pragma once
 #include "../common/CommonDefinition.h"
 #include "../threadpool/ThreadPool.h"
-#include "../common/SocketOperationsHandler.h"
+#include "../common/BaseSocketHandler.h"
 #include "../common/EventDispatcher.h"
 
 class IOWorkerThreadHandler : public EventDispatcher {
@@ -18,7 +18,7 @@ public:
     void setTaskFunction(const std::function<void(EventStorePointer*)>& taskFunction);
 
 private:
-    void handleIOTask(EventStorePointer* eventStorePointer); //,SocketOperationsHandler* socketOperationHandler
+    void handleIOTask(EventStorePointer* eventStorePointer); //,BaseSocketHandler* socketOperationHandler
 
 
 private:

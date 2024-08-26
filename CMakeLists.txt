@@ -10,8 +10,8 @@ add_executable(eventplus
         src/common/SocketDetails.cpp
         src/socket/client/TcpClientSocket.cpp
         src/socket/server/TcpServerSocket.cpp
-        src/datatrasaction/TCPSocketHandler.cpp
-        src/datatrasaction/TLSSocketHandler.cpp
+        src/datatrasaction/server/TCPSocketHandler.cpp
+        src/datatrasaction/server/TLSSocketHandler.cpp
         src/threadpool/ThreadPool.cpp
         src/IOWorkerThread/IOTask.cpp
         src/networkevent/EventScheduler.cpp
@@ -29,6 +29,10 @@ add_executable(eventplus
         src/workerthread/OperationExecutorTask.h
         src/socket/client/TLSClient.cpp
         src/socket/client/TLSClient.h
+        src/datatrasaction/client/TLSClientSocketHandler.cpp
+        src/datatrasaction/client/TLSClientSocketHandler.h
+        src/datatrasaction/client/TCPClientSocketHandler.cpp
+        src/datatrasaction/client/TCPClientSocketHandler.h
 )
 # Link with pthreads
 find_package(Threads REQUIRED)

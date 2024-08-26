@@ -41,7 +41,7 @@ public:
 
     void removeSocket(EventStorePointer* eventStorePointer) override;
 
-    void setSocketOperationHandler(SocketOperationsHandler* socketOperationHandler);
+    void setSocketOperationHandler(BaseSocketHandler* socketOperationHandler);
 
     void setEventReceiver(EventReceiver* eventReceiver);
 
@@ -66,7 +66,7 @@ private:
 
     std::unordered_map<int, std::unique_ptr<EventStorePointer>> clientEventStores;
     std::mutex clientEventStoresMutex;
-    SocketOperationsHandler* m_socketOperationHandler;
+    BaseSocketHandler* m_socketOperationHandler;
     EventReceiver* m_eventReceiver;
     std::unique_ptr<IOWorkerThreadHandler> ioWorkerThreadHandler;
     std::function<void(EventStorePointer*)> m_callBackFunction;

@@ -68,5 +68,5 @@ void TcpClientSocket::setServerIp(const std::string &serverIp){
 
 
 void TcpClientSocket::setSocketEventHandler(const std::unique_ptr<EventHandlerThread> &socketEventHandler) {
-    m_socketEventHandler = socketEventHandler;
+//    m_socketEventHandler = socketEventHandler;
 }

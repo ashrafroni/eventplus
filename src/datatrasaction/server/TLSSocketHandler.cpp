@@ -5,18 +5,21 @@
 #include <unistd.h>
 #include <cstring>
 #include <sys/ioctl.h>
-#include "TLSSocketHandler.h"
+#include "TLSServerSocketHandler.h"
 
-TLSSocketHandler::TLSSocketHandler(){
-
-}
-
-TLSSocketHandler::~TLSSocketHandler(){
+TLSServerSocketHandler::TLSServerSocketHandler(){
 
 }
 
-bool TLSSocketHandler::initConnection(EventStorePointer* eventStorePointer) {
-    // Get new SSL certificate
+TLSServerSocketHandler::~TLSServerSocketHandler(){
+
+}
+
+bool TLSServerSocketHandler::initConnection(EventStorePointer* eventStorePointer) {
+    if (eventStorePointer == nullptr || eventStorePointer->m_SSL == nullptr) {
+        return false;
+    }
+
     eventStorePointer->m_SSL = m_sslCertificateHandler->getNewCertificate();
     if (eventStorePointer->m_SSL == nullptr) {
         std::cerr << "Failed to get new SSL certificate" << std::endl;
@@ -82,11 +85,20 @@ bool TLSSocketHandler::initConnection(EventStorePointer* eventStorePointer) {
     return true;
 }
 
-ssize_t TLSSocketHandler::sendData(EventStorePointer* eventStorePointer, std::string& data){
+ssize_t TLSServerSocketHandler::sendData(EventStorePointer* eventStorePointer, std::string& data){
+    if (eventStorePointer == nullptr || eventStorePointer->m_SSL == nullptr) {
+        return -1;
+    }
+    std::lock_guard<std::mutex> lock(eventStorePointer->m_socketMutex);
     return SSL_write(eventStorePointer->m_SSL, data.c_str(), data.length());
 }
 
-ssize_t TLSSocketHandler::receiveData(EventStorePointer* eventStorePointer, std::string& data){
+ssize_t TLSServerSocketHandler::receiveData(EventStorePointer* eventStorePointer, std::string& data){
+    if (eventStorePointer == nullptr || eventStorePointer->m_SSL == nullptr) {
+        return -1;
+    }
+
+    std::lock_guard<std::mutex> lock(eventStorePointer->m_socketMutex);
     const int bufferSize = 1000; // Adjust this to your desired buffer size
     std::vector<char> receivedData;
     int totalBytesRead = 0;
@@ -126,10 +138,13 @@ ssize_t TLSSocketHandler::receiveData(EventStorePointer* eventStorePointer, std:
     return totalBytesRead;
 }
 
-void TLSSocketHandler::closeConnection(EventStorePointer* eventStorePointer) {
+void TLSServerSocketHandler::closeConnection(EventStorePointer* eventStorePointer) {
+
+
     if (eventStorePointer == nullptr || eventStorePointer->m_SSL == nullptr) {
         return;
     }
+    std::lock_guard<std::mutex> lock(eventStorePointer->m_socketMutex);
 
     SSL* pSSL = eventStorePointer->m_SSL;
     int iSocketID = eventStorePointer->m_socketId;
@@ -156,7 +171,13 @@ void TLSSocketHandler::closeConnection(EventStorePointer* eventStorePointer) {
 }
 
 
-ssize_t TLSSocketHandler::receivePartialData(EventStorePointer* eventStorePointer, int dataSize, std::string& data) {
+ssize_t TLSServerSocketHandler::receivePartialData(EventStorePointer* eventStorePointer, int dataSize, std::string& data) {
+    if (eventStorePointer == nullptr || eventStorePointer->m_SSL == nullptr) {
+        return -1;
+    }
+
+    std::lock_guard<std::mutex> lock(eventStorePointer->m_socketMutex);
+
     std::vector<char> receivedData;
     int totalBytesRead = 0;
     int remainingSize = dataSize; // Keep track of how much more data we need to read
@@ -201,13 +222,13 @@ ssize_t TLSSocketHandler::receivePartialData(EventStorePointer* eventStorePointe
 
 
 
-ssize_t TLSSocketHandler::getAvailableDataInSocket(EventStorePointer* eventStorePointer){
+ssize_t TLSServerSocketHandler::getAvailableDataInSocket(EventStorePointer* eventStorePointer){
     //TODO:this function is not implemented
     return -1;
 }
 
 
-bool TLSSocketHandler::loadCertificate(const std::string& certificateFileName, const std::string& keyFileName){
+bool TLSServerSocketHandler::loadCertificate(const std::string& certificateFileName, const std::string& keyFileName){
     m_sslCertificateHandler = new SSLCertificateHandler();
     m_sslCertificateHandler->setCertificateAndKeyFileName(certificateFileName, keyFileName);
     return m_sslCertificateHandler->initCertificationManager();

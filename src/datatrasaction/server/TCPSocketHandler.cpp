@@ -4,21 +4,21 @@
 
 #include <cstring>
 #include <unistd.h>
-#include "TCPSocketHandler.h"
+#include "TCPServerSocketHandler.h"
 #include <sys/ioctl.h>
 
 
-TCPSocketHandler::TCPSocketHandler(){
+TCPServerSocketHandler::TCPServerSocketHandler(){
 
 }
-TCPSocketHandler::~TCPSocketHandler(){
+TCPServerSocketHandler::~TCPServerSocketHandler(){
 
 }
-bool TCPSocketHandler::initConnection(EventStorePointer* eventStorePointer){
+bool TCPServerSocketHandler::initConnection(EventStorePointer* eventStorePointer){
     return true;
 }
 
-ssize_t TCPSocketHandler::sendData(EventStorePointer* eventStorePointer, std::string& data){
+ssize_t TCPServerSocketHandler::sendData(EventStorePointer* eventStorePointer, std::string& data){
     ssize_t totalSent = 0;
 
     std::lock_guard<std::mutex> lock(eventStorePointer->m_socketMutex);
@@ -48,9 +48,9 @@ ssize_t TCPSocketHandler::sendData(EventStorePointer* eventStorePointer, std::st
 
 
 
-ssize_t TCPSocketHandler::receiveData(EventStorePointer* eventStorePointer, std::string& data){
+ssize_t TCPServerSocketHandler::receiveData(EventStorePointer* eventStorePointer, std::string& data){
     std::lock_guard<std::mutex> lock(eventStorePointer->m_socketMutex);
-    int availableAmount = getAvailableDataInSocket(eventStorePointer);
+    size_t availableAmount = getAvailableDataInSocket(eventStorePointer);
     return receivePartialData(eventStorePointer,availableAmount,data);
 }
 
@@ -59,7 +59,7 @@ ssize_t TCPSocketHandler::receiveData(EventStorePointer* eventStorePointer, std:
 
 
 
-ssize_t TCPSocketHandler::getAvailableDataInSocket(EventStorePointer* eventStorePointer){
+ssize_t TCPServerSocketHandler::getAvailableDataInSocket(EventStorePointer* eventStorePointer){
     ssize_t bytesAvailable;
     if (ioctl(eventStorePointer->m_socketId, FIONREAD, &bytesAvailable) == -1) {
         perror("ioctl FIONREAD");
@@ -69,7 +69,7 @@ ssize_t TCPSocketHandler::getAvailableDataInSocket(EventStorePointer* eventStore
     return bytesAvailable;
 }
 
-ssize_t TCPSocketHandler::receivePartialData(EventStorePointer* eventStorePointer, int dataSize, std::string& data) {
+ssize_t TCPServerSocketHandler::receivePartialData(EventStorePointer* eventStorePointer, int dataSize, std::string& data) {
     std::vector<char> buffer(dataSize);
     ssize_t totalBytesRead = 0;
 
@@ -106,13 +106,13 @@ ssize_t TCPSocketHandler::receivePartialData(EventStorePointer* eventStorePointe
     return totalBytesRead;
 }
 
-void TCPSocketHandler::closeConnection(EventStorePointer* eventStorePointer){
+void TCPServerSocketHandler::closeConnection(EventStorePointer* eventStorePointer){
     close(eventStorePointer->m_socketId);
 }
 
 
 
-//ssize_t TCPSocketHandler::receiveData(EventStorePointer* eventStorePointer, std::string& data){
+//ssize_t TCPServerSocketHandler::receiveData(EventStorePointer* eventStorePointer, std::string& data){
 //    std::vector<char> bufferDataRead;
 //    std::lock_guard<std::mutex> lock(eventStorePointer->m_socketMutex);
 //    char buffer[1024];

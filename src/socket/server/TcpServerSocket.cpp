@@ -162,7 +162,7 @@ void TcpServerSocket::startReceivingConnection() {
     m_eventScheduler.startAllEventHandler();
 }
 
-void TcpServerSocket::setSocketOperationHandler(SocketOperationsHandler* socketOperationHandler) {
+void TcpServerSocket::setSocketOperationHandler(BaseSocketHandler* socketOperationHandler) {
     m_socketOperationHandler = socketOperationHandler;
 }
 
