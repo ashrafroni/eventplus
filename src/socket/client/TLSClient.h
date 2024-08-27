@@ -7,39 +7,30 @@
 
 #include <iostream>
 #include <string>
-#include <openssl/ssl.h>
-#include <openssl/err.h>
 #include <netdb.h>
 #include <unistd.h>
 #include "../SocketHandler.h"
 #include "../../networkevent/EventHandlerThread.h"
+#include "../../common/ClientEventReceiver.h"
 
 class TLSClient : public EventDispatcher{
 public:
     TLSClient(const std::string& address, const std::string& port);
     ~TLSClient();
 
-    bool Init();
     bool Connect();
-    int SendData(const uint8_t* data, int length);
-    std::string ReceiveData(int size);
+    int SendData(std::string& data);
     void Close();
     void handleIOEvent(EventStorePointer* eventStorePointer) override;
 
-
-
 private:
-    void InitCTX();
-    bool CreateSocket();
-
     std::string m_address;
     std::string m_port;
-    SSL_CTX* m_ctx = nullptr;
-
-
 
     SocketHandler m_socketHandler;
     SocketDetails m_socketDetails;
     std::unique_ptr<EventStorePointer> m_clientSocket;
     std::unique_ptr<EventHandlerThread> m_socketEventHandler;
+    BaseSocketHandler* m_baseSocketHandler;
+    ClientEventReceiver* m_clientEventReceiver;
 };

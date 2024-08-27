@@ -40,13 +40,18 @@ TLSClientSocketHandler::~TLSClientSocketHandler(){
 
 
 bool TLSClientSocketHandler::initConnection(EventStorePointer* eventStorePointer) {
+    if(eventStorePointer == nullptr){
+        return false;
+    }
     eventStorePointer->m_SSL = SSL_new(m_ctx);
+
     if (eventStorePointer->m_SSL == nullptr) {
         std::cerr << "SSL_new() failed" << std::endl;
         return false;
     }
 
     SSL_set_fd(eventStorePointer->m_SSL, eventStorePointer->m_socketId);
+
     if (SSL_connect(eventStorePointer->m_SSL) <= 0) {
         SSL_get_error(eventStorePointer->m_SSL, -1);
         ERR_print_errors_fp(stderr);

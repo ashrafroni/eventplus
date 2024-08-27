@@ -10,7 +10,7 @@
 
 
 
-class Ctest : public EventReceiver{
+class Ctest : public ServerEventReceiver{
 public:
     void newConnectionEvent(EventStorePointer* eventStorePointer){
         std::cout << "newConnectionEvent:" << std::endl;
@@ -22,7 +22,7 @@ public:
 
     void dataEvent(EventStorePointer* eventStorePointer){
         int availabledata = eventStorePointer->getAvailableDataInSocket();
-        std::cout << "EventReceiver:" << availabledata << std::endl;
+        std::cout << "ServerEventReceiver:" << availabledata << std::endl;
         std::string incomingData;
         eventStorePointer->receiveData(incomingData);
         std::cout << "data:" << incomingData << std::endl;

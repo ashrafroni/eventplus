@@ -10,6 +10,7 @@
 #include "../../common/BaseSocketHandler.h"
 
 class TLSClientSocketHandler : public BaseSocketHandler {
+public:
     TLSClientSocketHandler();
     ~TLSClientSocketHandler();
 

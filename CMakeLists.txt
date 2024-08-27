@@ -22,7 +22,7 @@ add_executable(eventplus
         src/IOWorkerThread/IOWorkerThreadHandler.h
         src/workerthread/ExecutorThreadHandler.cpp
         src/workerthread/ExecutorThreadHandler.h
-        src/common/EventReceiver.h
+        src/common/ServerEventReceiver.h
         src/ssl/SSLCertificateHandler.cpp
         src/ssl/SSLCertificateHandler.h
         src/workerthread/OperationExecutorTask.cpp
@@ -33,6 +33,8 @@ add_executable(eventplus
         src/datatrasaction/client/TLSClientSocketHandler.h
         src/datatrasaction/client/TCPClientSocketHandler.cpp
         src/datatrasaction/client/TCPClientSocketHandler.h
+        src/socket/client/TLSClient.cpp
+        src/common/ClientEventReceiver.h
 )
 # Link with pthreads
 find_package(Threads REQUIRED)

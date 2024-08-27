@@ -11,7 +11,7 @@
 #include "../SocketHandler.h"
 #include "../../networkevent/EventScheduler.h"
 #include "../../common/SocketRemovalHandler.h"
-#include "../../common/EventReceiver.h"
+#include "../../common/ServerEventReceiver.h"
 #include "../../IOWorkerThread/IOWorkerThreadHandler.h"
 #include <thread>
 #include <sys/socket.h>
@@ -43,7 +43,7 @@ public:
 
     void setSocketOperationHandler(BaseSocketHandler* socketOperationHandler);
 
-    void setEventReceiver(EventReceiver* eventReceiver);
+    void setEventReceiver(ServerEventReceiver* eventReceiver);
 
     void stopPolling();
 public:
@@ -67,7 +67,7 @@ private:
     std::unordered_map<int, std::unique_ptr<EventStorePointer>> clientEventStores;
     std::mutex clientEventStoresMutex;
     BaseSocketHandler* m_socketOperationHandler;
-    EventReceiver* m_eventReceiver;
+    ServerEventReceiver* m_eventReceiver;
     std::unique_ptr<IOWorkerThreadHandler> ioWorkerThreadHandler;
     std::function<void(EventStorePointer*)> m_callBackFunction;
 };
