@@ -166,6 +166,6 @@ void TcpServerSocket::setSocketOperationHandler(BaseSocketHandler* socketOperati
     m_socketOperationHandler = socketOperationHandler;
 }
 
-void TcpServerSocket::setEventReceiver(EventReceiver* eventReceiver) {
+void TcpServerSocket::setEventReceiver(ServerEventReceiver* eventReceiver) {
     m_eventReceiver = eventReceiver;
 }
