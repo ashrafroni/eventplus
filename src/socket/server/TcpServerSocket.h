@@ -57,7 +57,6 @@ private:
     std::string m_serverIP;
     int m_serverPort;
     int m_serverSocketID;
-//    bool m_bIsActive;
     SocketDetails m_socketDetails;
     std::unique_ptr<EventStorePointer> m_eventStore;
     EventHandlerThread m_socketEventHandler;

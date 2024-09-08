@@ -13,7 +13,7 @@
 #include "../../networkevent/EventHandlerThread.h"
 #include "../../common/ClientEventReceiver.h"
 
-class TLSClient : public EventDispatcher{
+class TLSClient : public EventDispatcher,SocketRemovalHandler{
 public:
     TLSClient(const std::string& address, const std::string& port);
     ~TLSClient();
@@ -22,6 +22,7 @@ public:
     int SendData(std::string& data);
     void Close();
     void handleIOEvent(EventStorePointer* eventStorePointer) override;
+    void removeSocket(EventStorePointer* eventStorePointer) override;
 
 private:
     std::string m_address;

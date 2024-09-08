@@ -6,9 +6,8 @@
 
 #include "../../common/CommonDefinition.h"
 #include "../../common/SocketDetails.h"
-#include "../../common/BaseSocketHandler.h"
 #include "../../ssl/SSLCertificateHandler.h"
-
+#include "../../common/SocketRemovalHandler.h"
 
 class TLSServerSocketHandler : public BaseSocketHandler {
 public:
@@ -22,8 +21,12 @@ public:
     ssize_t getAvailableDataInSocket(EventStorePointer* eventStorePointer)override;
     void closeConnection(EventStorePointer* eventStorePointer)override;
 
+    void setSocketRemovalHandler(SocketRemovalHandler* removeSocketEventHandler);
+
     bool loadCertificate(const std::string& certificateFileName, const std::string& keyFileName);
 private:
+
+    SocketRemovalHandler* m_removeSocketEventHandler;
     SSLCertificateHandler* m_sslCertificateHandler{};
 };
 

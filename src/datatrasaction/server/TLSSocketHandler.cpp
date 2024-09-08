@@ -7,6 +7,7 @@
 #include <sys/ioctl.h>
 #include "TLSServerSocketHandler.h"
 
+
 TLSServerSocketHandler::TLSServerSocketHandler(){
 
 }
@@ -16,18 +17,20 @@ TLSServerSocketHandler::~TLSServerSocketHandler(){
 }
 
 bool TLSServerSocketHandler::initConnection(EventStorePointer* eventStorePointer) {
-    if (eventStorePointer == nullptr || eventStorePointer->m_SSL == nullptr) {
+    if (eventStorePointer == nullptr ) {
         return false;
     }
-
+    std::cout << "initConnection. m_sslCertificateHandler->getNewCertificate()" << std::endl;
     eventStorePointer->m_SSL = m_sslCertificateHandler->getNewCertificate();
+
     if (eventStorePointer->m_SSL == nullptr) {
         std::cerr << "Failed to get new SSL certificate" << std::endl;
         close(eventStorePointer->m_socketId);
         return false;
     }
-
+    std::cout << "initConnection. SSL_set_fd" << std::endl;
     // Set the file descriptor
+
     int iSetFd = SSL_set_fd(eventStorePointer->m_SSL, eventStorePointer->m_socketId);
 
 
@@ -134,7 +137,8 @@ ssize_t TLSServerSocketHandler::receiveData(EventStorePointer* eventStorePointer
     if (totalBytesRead > 0) {
         data.append(receivedData.begin(), receivedData.end());
     }
-
+    if(totalBytesRead == 0 && m_removeSocketEventHandler != nullptr)
+        m_removeSocketEventHandler->removeSocket(eventStorePointer);
     return totalBytesRead;
 }
 
@@ -144,6 +148,7 @@ void TLSServerSocketHandler::closeConnection(EventStorePointer* eventStorePointe
     if (eventStorePointer == nullptr || eventStorePointer->m_SSL == nullptr) {
         return;
     }
+
     std::lock_guard<std::mutex> lock(eventStorePointer->m_socketMutex);
 
     SSL* pSSL = eventStorePointer->m_SSL;
@@ -154,15 +159,18 @@ void TLSServerSocketHandler::closeConnection(EventStorePointer* eventStorePointe
 
     if (iSSLShutdown < 0) {
         int sslError = SSL_get_error(pSSL, iSSLShutdown);
-        std::cout << "Remove Socket Failed: " << iSocketID << " SSLShutdown error: " << sslError << std::endl;
+        std::cout << "Remove Socket Failed: " << iSocketID << " SSLShutdown error: " << sslError << " errno"  << errno << std::endl;
+    }
+    else if(iSSLShutdown == 0){
+        iSSLShutdown = SSL_shutdown(pSSL);
     }
 
     // Close the socket
     int iCloseStatus = close(iSocketID);
     if (iCloseStatus < 0) {
         perror("Error closing socket");
+        std::cout << "iCloseStatus: " << iCloseStatus << std::endl;
     }
-
     // Free the SSL structure
     SSL_free(pSSL);
     eventStorePointer->m_SSL = nullptr;
@@ -215,6 +223,8 @@ ssize_t TLSServerSocketHandler::receivePartialData(EventStorePointer* eventStore
     if (totalBytesRead > 0) {
         data.append(receivedData.begin(), receivedData.end());
     }
+    if(totalBytesRead == 0 && m_removeSocketEventHandler != nullptr)
+        m_removeSocketEventHandler->removeSocket(eventStorePointer);
 
     return totalBytesRead;
 }
@@ -223,8 +233,8 @@ ssize_t TLSServerSocketHandler::receivePartialData(EventStorePointer* eventStore
 
 
 ssize_t TLSServerSocketHandler::getAvailableDataInSocket(EventStorePointer* eventStorePointer){
-    //TODO:this function is not implemented
-    return -1;
+    int pendingBytes = SSL_pending(eventStorePointer->m_SSL);
+    return pendingBytes;
 }
 
 
@@ -232,4 +242,9 @@ bool TLSServerSocketHandler::loadCertificate(const std::string& certificateFileN
     m_sslCertificateHandler = new SSLCertificateHandler();
     m_sslCertificateHandler->setCertificateAndKeyFileName(certificateFileName, keyFileName);
     return m_sslCertificateHandler->initCertificationManager();
+}
+
+
+void TLSServerSocketHandler::setSocketRemovalHandler(SocketRemovalHandler* removeSocketEventHandler){
+    m_removeSocketEventHandler = removeSocketEventHandler;
 }

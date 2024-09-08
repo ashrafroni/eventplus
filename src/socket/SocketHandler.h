@@ -10,7 +10,7 @@ class SocketHandler {
 
 public:
     int createServerSocket(std::string serverIP, std::string serverPort,SocketDetails& socketDetails);
-    int createClientSocket(std::string serverIP,std::string strServerPort);
+    int createClientSocket(std::string serverIP,std::string strServerPort, bool isNonBlockingSocket);
     void setNonBlocking(int socketID);
     void setBlocking(int socketID);
     bool isSocketClosed(int socketId);

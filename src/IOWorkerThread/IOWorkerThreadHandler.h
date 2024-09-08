@@ -5,7 +5,6 @@
 #pragma once
 #include "../common/CommonDefinition.h"
 #include "../threadpool/ThreadPool.h"
-#include "../common/BaseSocketHandler.h"
 #include "../common/EventDispatcher.h"
 
 class IOWorkerThreadHandler : public EventDispatcher {

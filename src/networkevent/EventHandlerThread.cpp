@@ -30,6 +30,8 @@ EventHandlerThread::EventHandlerThread(){
 
 
 EventHandlerThread::~EventHandlerThread(){
+    stopPolling();
+    closeEpoll();
 }
 
 //void signal_handler(int signum) {

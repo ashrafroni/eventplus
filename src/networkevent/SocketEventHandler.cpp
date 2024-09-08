@@ -36,6 +36,10 @@ void SocketEventHandler::createEpoll(){
 
 
 void SocketEventHandler::closeEpoll(){
+    if(!m_continuePolling){
+        return;
+    }
+
     m_continuePolling = false;
     close(m_epollFileDescriptor);
     m_epollFileDescriptor = -1;
@@ -45,7 +49,7 @@ void SocketEventHandler::closeEpoll(){
 bool SocketEventHandler::addSocket(EventStorePointer* eventStorePointer) {
 
     std::lock_guard<std::mutex> lock(m_pollMutex);
-    struct epoll_event ev;
+    struct epoll_event ev{};
     ev.events = m_pollEvent;
     ev.data.ptr = eventStorePointer;
     if (epoll_ctl(m_epollFileDescriptor, EPOLL_CTL_ADD, eventStorePointer->m_socketId, &ev) == -1) {
@@ -58,7 +62,7 @@ bool SocketEventHandler::addSocket(EventStorePointer* eventStorePointer) {
 
 bool SocketEventHandler::removeSocket(EventStorePointer* eventStorePointer) {
     std::lock_guard<std::mutex> lock(m_pollMutex);
-    struct epoll_event ev;
+    struct epoll_event ev{};
     if (epoll_ctl(m_epollFileDescriptor, EPOLL_CTL_DEL, eventStorePointer->m_socketId, &ev) == -1) {
         int epollStatus = fcntl(m_epollFileDescriptor, F_GETFD);
         fprintf(stderr, "epoll_ctl: listen_sock remove socket %d failed: ", eventStorePointer->m_socketId);
@@ -83,11 +87,15 @@ void SocketEventHandler::startPolling(){
             continue;
         }
         for (int i = 0; i < event_count; i++){
-            EventStorePointer* eventStorePointer = static_cast<EventStorePointer*> (m_events[i].data.ptr);
+            auto* eventStorePointer = static_cast<EventStorePointer*> (m_events[i].data.ptr);
             if (m_events[i].events & EPOLLRDHUP){
-                if(m_removeSocketEventHandler != NULL)
+                if(m_removeSocketEventHandler != nullptr)
                     m_removeSocketEventHandler->removeSocket(eventStorePointer);
-            }else if(eventStorePointer != NULL) {
+            }else if(m_events[i].events & EPOLLIN){
+                eventStorePointer->m_eventType = EventTypeIncomingData;
+                handleEvent(eventStorePointer);
+            }else if(eventStorePointer != nullptr) {
+                eventStorePointer->m_eventType = EventTypeOther;
                 handleEvent(eventStorePointer);
             }
         }
@@ -105,11 +113,10 @@ void SocketEventHandler::handleEvent(EventStorePointer* eventStorePointer){
     if(!m_continuePolling)
         return;
 
-    if(eventStorePointer == NULL){
+    if(eventStorePointer == nullptr){
         return;
     }
-    if(m_eventDispatcher != NULL){
-        eventStorePointer->m_eventType = EventTypeIncomingData;
+    if(m_eventDispatcher != nullptr  ){
         m_eventDispatcher->handleIOEvent(eventStorePointer);
     }
 }

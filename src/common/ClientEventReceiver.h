@@ -13,4 +13,5 @@
 class ClientEventReceiver{
 public:
     virtual void dataEvent(EventStorePointer* eventStorePointer) = 0;
+    virtual void socketRemoved(EventStorePointer* eventStorePointer) = 0;
 };

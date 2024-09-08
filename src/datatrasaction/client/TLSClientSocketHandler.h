@@ -7,7 +7,8 @@
 #pragma once
 
 
-#include "../../common/BaseSocketHandler.h"
+#include "../../common/SocketDetails.h"
+//#include "../../common/BaseSocketHandler.h"
 
 class TLSClientSocketHandler : public BaseSocketHandler {
 public:
@@ -20,7 +21,7 @@ public:
     ssize_t receivePartialData(EventStorePointer* eventStorePointer, int dataSize, std::string& data)override;
     ssize_t getAvailableDataInSocket(EventStorePointer* eventStorePointer)override;
     void closeConnection(EventStorePointer* eventStorePointer)override;
-
+    void setSocketRemovalHandler(SocketRemovalHandler* removeSocketEventHandler) override;
 
 private:
     void InitCTX();
