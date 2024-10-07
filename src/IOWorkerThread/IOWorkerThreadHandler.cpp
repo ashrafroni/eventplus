@@ -26,8 +26,8 @@ void IOWorkerThreadHandler::handleIOTask(EventStorePointer* eventStorePointer){
     std::string dataReceived;
     int iDataAvailable = eventStorePointer->getAvailableDataInSocket();
     eventStorePointer->receivePartialData(4,dataReceived);
-    std::cout << "iDataAvailable: " << iDataAvailable << ":" << dataReceived << std::endl;
+
     std::string restDataReceived;
     eventStorePointer->receivePartialData(iDataAvailable - 4,restDataReceived);
-    std::cout << "iDataAvailable: " << iDataAvailable << ":" << restDataReceived << std::endl;
+
 }

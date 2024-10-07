@@ -9,15 +9,15 @@
 
 class IOWorkerThreadHandler : public EventDispatcher {
 public:
-    IOWorkerThreadHandler(size_t numThreads);
+    explicit IOWorkerThreadHandler(size_t numThreads);
     ~IOWorkerThreadHandler();
 
 
-    void handleIOEvent(EventStorePointer* eventStorePointer);
+    void handleIOEvent(EventStorePointer* eventStorePointer) override;
     void setTaskFunction(const std::function<void(EventStorePointer*)>& taskFunction);
 
 private:
-    void handleIOTask(EventStorePointer* eventStorePointer); //,BaseSocketHandler* socketOperationHandler
+    void handleIOTask(EventStorePointer* eventStorePointer);
 
 
 private:

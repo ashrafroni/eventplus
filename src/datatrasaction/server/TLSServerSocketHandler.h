@@ -20,8 +20,7 @@ public:
     ssize_t receivePartialData(EventStorePointer* eventStorePointer, int dataSize, std::string& data)override;
     ssize_t getAvailableDataInSocket(EventStorePointer* eventStorePointer)override;
     void closeConnection(EventStorePointer* eventStorePointer)override;
-
-    void setSocketRemovalHandler(SocketRemovalHandler* removeSocketEventHandler);
+    void setSocketRemovalHandler(SocketRemovalHandler* removeSocketEventHandler)override;
 
     bool loadCertificate(const std::string& certificateFileName, const std::string& keyFileName);
 private:

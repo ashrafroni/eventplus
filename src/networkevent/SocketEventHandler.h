@@ -37,7 +37,7 @@ public:
 
 private:
     bool addEventPipeInEpoll();
-//    bool removeEventSocket();
+
 
 private:
     bool m_continuePolling{};
