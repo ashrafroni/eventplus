@@ -100,7 +100,7 @@ ssize_t TLSServerSocketHandler::receiveData(EventStorePointer* eventStorePointer
     if (eventStorePointer == nullptr || eventStorePointer->m_SSL == nullptr) {
         return -1;
     }
-
+    std::cout << "receiveData before lock " << std::endl;
     std::lock_guard<std::mutex> lock(eventStorePointer->m_socketMutex);
     const int bufferSize = 1000; // Adjust this to your desired buffer size
     std::vector<char> receivedData;
@@ -110,6 +110,7 @@ ssize_t TLSServerSocketHandler::receiveData(EventStorePointer* eventStorePointer
         std::vector<char> buffer(bufferSize);
 
         int bytesRead = SSL_read(eventStorePointer->m_SSL, buffer.data(), buffer.size());
+        std::cout << "SSL_read: " << bytesRead << std::endl;
         if (bytesRead > 0) {
             receivedData.insert(receivedData.end(), buffer.begin(), buffer.begin() + bytesRead);
             totalBytesRead += bytesRead;
@@ -137,8 +138,10 @@ ssize_t TLSServerSocketHandler::receiveData(EventStorePointer* eventStorePointer
     if (totalBytesRead > 0) {
         data.append(receivedData.begin(), receivedData.end());
     }
-    if(totalBytesRead == 0 && m_removeSocketEventHandler != nullptr)
+    if(totalBytesRead == 0 && m_removeSocketEventHandler != nullptr){
         m_removeSocketEventHandler->removeSocket(eventStorePointer);
+    }
+    std::cout << "receiveData: " << totalBytesRead << std::endl;
     return totalBytesRead;
 }
 
@@ -149,7 +152,7 @@ void TLSServerSocketHandler::closeConnection(EventStorePointer* eventStorePointe
         return;
     }
 
-    std::lock_guard<std::mutex> lock(eventStorePointer->m_socketMutex);
+    //std::lock_guard<std::mutex> lock(eventStorePointer->m_socketMutex);
 
     SSL* pSSL = eventStorePointer->m_SSL;
     int iSocketID = eventStorePointer->m_socketId;
@@ -165,7 +168,7 @@ void TLSServerSocketHandler::closeConnection(EventStorePointer* eventStorePointe
         iSSLShutdown = SSL_shutdown(pSSL);
     }
 
-    // Close the socket
+    // close the socket
     int iCloseStatus = close(iSocketID);
     if (iCloseStatus < 0) {
         perror("Error closing socket");

@@ -46,15 +46,15 @@ public:
     void* m_parameters;
     void* m_socketEventHandler;
     EventType m_eventType;
-    BaseSocketHandler* m_baseSocketHandler;
+    BaseSocketHandler* m_baseSocketHandler{};
     std::mutex m_socketMutex;
 
-    SSL* m_SSL;
+    SSL* m_SSL{};
     EventStorePointer() : m_parameters(nullptr), m_socketEventHandler(nullptr),  m_eventType(EventTypeBlank) {
 //        m_baseSocketHandler = nullptr;
     }
 
-    EventStorePointer(const SocketDetails& details, void* parameters = nullptr)
+    explicit EventStorePointer(const SocketDetails& details, void* parameters = nullptr)
             : SocketDetails(details), m_parameters(parameters), m_socketEventHandler(nullptr), m_eventType(EventTypeBlank) {
 //        m_baseSocketHandler = nullptr;
 
@@ -82,6 +82,7 @@ public:
     }
 
     ssize_t sendData(std::string& data) {
+        std::cout << "sendData:" << data << std::endl;
         return m_baseSocketHandler->sendData(this, data);
     }
 

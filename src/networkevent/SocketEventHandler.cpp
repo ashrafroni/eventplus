@@ -10,7 +10,8 @@
 SocketEventHandler::SocketEventHandler() {
     m_pollEvent =  EPOLLIN | EPOLLET | EPOLLRDHUP;
     createEpoll();
-//    addEventSocket();
+    addEventPipeInEpoll();
+
 }
 
 SocketEventHandler::~SocketEventHandler() {
@@ -26,8 +27,7 @@ void SocketEventHandler::setEPollEventFlag(uint32_t epollEvent)
 
 void SocketEventHandler::createEpoll(){
     m_epollFileDescriptor = epoll_create(MAX_EVENTS);
-    if (m_epollFileDescriptor == -1)
-    {
+    if (m_epollFileDescriptor == -1){
         m_continuePolling = false;
         return;
     }
@@ -36,13 +36,16 @@ void SocketEventHandler::createEpoll(){
 
 
 void SocketEventHandler::closeEpoll(){
-    if(!m_continuePolling){
+    if(m_epollFileDescriptor == -1)
         return;
-    }
-
     m_continuePolling = false;
+    //Closing the pipe FD
+    close(m_pipeFds[0]);
+    close(m_pipeFds[1]);
     close(m_epollFileDescriptor);
     m_epollFileDescriptor = -1;
+    m_pipeFds[0] = m_pipeFds[1] = -1;
+    std::cout << "Epoll Socket closed" << std::endl;
 }
 
 
@@ -81,12 +84,23 @@ void SocketEventHandler::setSocketRemovalHandler(SocketRemovalHandler* removeSoc
 }
 
 void SocketEventHandler::startPolling(){
+    std::cout << "startPolling:"  << std::endl;
     while (m_continuePolling){
-        int event_count = epoll_wait(m_epollFileDescriptor, m_events, MAX_EVENTS, 500);
+        int event_count = epoll_wait(m_epollFileDescriptor, m_events, MAX_EVENTS, 10000);
         if(event_count < 1 ){
             continue;
         }
+
         for (int i = 0; i < event_count; i++){
+
+            if (m_events[i].data.fd == m_pipeFds[0]) {
+                char stopSignal;
+                read(m_pipeFds[0], &stopSignal, sizeof(stopSignal));  // Clear the event
+                std::cout << "Received stop signal, exiting polling..." << std::endl;
+               break;
+            }
+
+
             auto* eventStorePointer = static_cast<EventStorePointer*> (m_events[i].data.ptr);
             if (m_events[i].events & EPOLLRDHUP){
                 if(m_removeSocketEventHandler != nullptr)
@@ -100,13 +114,20 @@ void SocketEventHandler::startPolling(){
             }
         }
     }
+    closeEpoll();
     std::cout << "exited from polling: " << std::endl;
 }
 
 void SocketEventHandler::stopPolling(){
-    if(!m_continuePolling)
+    if(m_epollFileDescriptor == -1){
+        std::cout << "Socket already closed" << std::endl;
         return;
+    }
     m_continuePolling = false;
+    if(m_pipeFds[1] > 0){
+        char stopSignal = 'x';
+        write(m_pipeFds[1], &stopSignal, sizeof(stopSignal));
+    }
 }
 
 void SocketEventHandler::handleEvent(EventStorePointer* eventStorePointer){
@@ -121,33 +142,17 @@ void SocketEventHandler::handleEvent(EventStorePointer* eventStorePointer){
     }
 }
 
+bool SocketEventHandler::addEventPipeInEpoll(){
+    if (pipe(m_pipeFds) == -1) {
+        perror("pipe");
+        return false;
+    }
 
-//        std::cerr << "Failed to remove socket " << eventStorePointer->m_socketId
-//                  << " from epoll instance " << m_epollFileDescriptor << ":EpollStatus: " << epollStatus << std::endl;
-//        std::cerr << "errno: " << errno << std::endl;
+    // Add the read end of the pipe to the epoll instance
+    struct epoll_event event{};
+    event.events = EPOLLIN;
+    event.data.fd = m_pipeFds[0];  // Add the read end of the pipe
+    epoll_ctl(m_epollFileDescriptor, EPOLL_CTL_ADD, m_pipeFds[0], &event);
+    return true;
+}
 
-//if (errno == EINTR){
-//std::cout << "signal received" << std::endl;
-//break;
-//}
-//if(eventStorePointer->m_socketId == m_realtimeEventHandleStorePointer->m_socketId){
-//std::cout << "stopPolling event received" << std::endl;
-//break;
-//}
-
-
-//bool SocketEventHandler::addEventSocket(){
-//    int eventFd = eventfd(0, EFD_NONBLOCK);
-//    if (eventFd == -1) {
-//        perror("eventfd");
-//        exit(EXIT_FAILURE);
-//    }
-//    m_realtimeEventHandleStorePointer = new EventStorePointer();
-//    m_realtimeEventHandleStorePointer->m_socketId = eventFd;
-//    addSocket(m_realtimeEventHandleStorePointer);
-//}
-
-//bool SocketEventHandler::removeEventSocket(){
-//    close(m_realtimeEventHandleStorePointer->m_socketId);
-//    delete m_realtimeEventHandleStorePointer;
-//}

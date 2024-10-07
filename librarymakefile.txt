@@ -1,0 +1,51 @@
+cmake_minimum_required(VERSION 3.24)
+project(eventplus)
+
+set(CMAKE_CXX_STANDARD 17)
+
+# Create a library instead of an executable
+add_library(eventplus
+    src/main.cpp  # If you don't need main.cpp in the library, remove this
+    src/socket/server/UdpServerSocket.cpp
+    src/networkevent/SocketEventHandler.cpp
+    src/common/SocketDetails.cpp
+    src/socket/client/TcpClientSocket.cpp
+    src/socket/server/TcpServerSocket.cpp
+    src/datatrasaction/server/TCPSocketHandler.cpp
+    src/datatrasaction/server/TLSSocketHandler.cpp
+    src/threadpool/ThreadPool.cpp
+    src/IOWorkerThread/IOTask.cpp
+    src/networkevent/EventScheduler.cpp
+    src/networkevent/EventHandlerThread.cpp
+    src/socket/SocketHandler.cpp
+    src/IOWorkerThread/IOWorkerThreadHandler.cpp
+    src/workerthread/ExecutorThreadHandler.cpp
+    src/ssl/SSLCertificateHandler.cpp
+    src/workerthread/OperationExecutorTask.cpp
+    src/socket/client/TLSClient.cpp
+    src/datatrasaction/client/TLSClientSocketHandler.cpp
+    src/datatrasaction/client/TCPClientSocketHandler.cpp
+    src/socket/client/TLSClient.cpp
+)
+
+# Link with pthreads
+find_package(Threads REQUIRED)
+target_link_libraries(eventplus PRIVATE Threads::Threads)
+
+# Find and link with OpenSSL
+find_package(OpenSSL REQUIRED)
+target_link_libraries(eventplus PRIVATE OpenSSL::SSL OpenSSL::Crypto)
+
+# Optionally specify the output directory for the library
+set_target_properties(eventplus PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
+)
+
+# Optional: Install the library and header files
+install(TARGETS eventplus
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+)
+
+install(DIRECTORY src/ DESTINATION include FILES_MATCHING PATTERN "*.h")

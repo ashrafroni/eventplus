@@ -36,6 +36,7 @@ void TcpServerSocket::stopPolling() {
 void TcpServerSocket::closeAllClientSocket() {
     std::unique_lock<std::mutex> lock(clientEventStoresMutex);
     for (const auto& [socketid, clientSocket] : clientEventStores) {
+//        m_socketHandler.setBlocking(socketid);
         clientSocket->closeConnection();
     }
     clientEventStores.clear();

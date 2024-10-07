@@ -33,9 +33,11 @@ TLSClientSocketHandler::TLSClientSocketHandler(){
 
 
 TLSClientSocketHandler::~TLSClientSocketHandler(){
+    std::cout << "TLSClientSocketHandler destruct." << std::endl;
     if (m_ctx) {
         SSL_CTX_free(m_ctx);
         m_ctx = nullptr;
+        std::cout << "TLSClientSocketHandler after cert close." << std::endl;
     }
 }
 
@@ -70,24 +72,22 @@ bool TLSClientSocketHandler::initConnection(EventStorePointer* eventStorePointer
     if(eventStorePointer == nullptr){
         return false;
     }
-    std::cout << "TLSClient::initConnection() SSL_new" << std::endl;
+
     eventStorePointer->m_SSL = SSL_new(m_ctx);
 
     if (eventStorePointer->m_SSL == nullptr) {
         std::cerr << "SSL_new() failed" << std::endl;
         return false;
     }
-    std::cout << "TLSClient::initConnection() SSL_set_fd" << std::endl;
+
     SSL_set_fd(eventStorePointer->m_SSL, eventStorePointer->m_socketId);
-    std::cout << "TLSClient::initConnection() SSL_connect" << std::endl;
+
     if (SSL_connect(eventStorePointer->m_SSL) <= 0) {
         SSL_get_error(eventStorePointer->m_SSL, -1);
         ERR_print_errors_fp(stderr);
-        std::cout << "TLSClient::initConnection() SSL_connect faiol" << std::endl;
         printSSLError(eventStorePointer->m_SSL);
         return false;
     }
-    std::cout << "TLSClient::initConnection() SSL_connect ok" << std::endl;
     return true;
 }
 
@@ -96,10 +96,12 @@ bool TLSClientSocketHandler::initConnection(EventStorePointer* eventStorePointer
 
 
 ssize_t TLSClientSocketHandler::sendData(EventStorePointer* eventStorePointer, std::string& data){
-    if(eventStorePointer == nullptr){
+
+    if (eventStorePointer == nullptr || eventStorePointer->m_SSL == nullptr) {
         return 0;
     }
-    return eventStorePointer->sendData(data);
+    std::lock_guard<std::mutex> lock(eventStorePointer->m_socketMutex);
+    return SSL_write(eventStorePointer->m_SSL, data.c_str(), data.length());
 }
 
 ssize_t TLSClientSocketHandler::receiveData(EventStorePointer* eventStorePointer, std::string& data){
@@ -108,7 +110,7 @@ ssize_t TLSClientSocketHandler::receiveData(EventStorePointer* eventStorePointer
     }
 
     std::lock_guard<std::mutex> lock(eventStorePointer->m_socketMutex);
-    const int bufferSize = 1000; // Adjust this to your desired buffer size
+    const int bufferSize = 1000;
     std::vector<char> receivedData;
     int totalBytesRead = 0;
 
@@ -162,38 +164,30 @@ void TLSClientSocketHandler::closeConnection(EventStorePointer* eventStorePointe
         return;
     }
 
-    std::cout << "closeConnection in client !" << std::endl;
+
     if (eventStorePointer->m_SSL) {
-        std::cout << "SSL_shutdown !" << std::endl;
         int shutdownStatus = SSL_shutdown(eventStorePointer->m_SSL);
-        std::cout << "SSL_shutdown after !" << std::endl;
         if (shutdownStatus == 0) {
-            // If the return value is 0, a bidirectional shutdown is required
             shutdownStatus = SSL_shutdown(eventStorePointer->m_SSL);
             if (shutdownStatus < 0) {
-                // Handle SSL shutdown error after the second call
                 int sslError = SSL_get_error(eventStorePointer->m_SSL, shutdownStatus);
-                std::cerr << "SSL shutdown error: " << sslError << std::endl;
             }
         } else if (shutdownStatus < 0) {
-            // Handle SSL shutdown error on the first call
             int sslError = SSL_get_error(eventStorePointer->m_SSL, shutdownStatus);
-            std::cerr << "SSL shutdown error: " << sslError << std::endl;
         }
-
-        // Free the SSL structure
-        SSL_free(eventStorePointer->m_SSL);
-        eventStorePointer->m_SSL = nullptr;
+        std::cout << "closing SSL" << std::endl;
+//        SSL_free(eventStorePointer->m_SSL);
+//        eventStorePointer->m_SSL = nullptr;
     }
 
-    if (eventStorePointer->m_socketId != -1) {
-        // Close the socket
-        if (close(eventStorePointer->m_socketId) == -1) {
-            // Log socket close error
-            std::cerr << "Socket close error: " << errno << std::endl;
-        }
-        eventStorePointer->m_socketId = -1;
-    }
+//    if (eventStorePointer->m_socketId != -1) {
+//        // close the socket
+//        if (close(eventStorePointer->m_socketId) == -1) {
+//            // Log socket close error
+//            std::cerr << "Socket close error: " << errno << std::endl;
+//        }
+//        eventStorePointer->m_socketId = -1;
+//    }
 }
 
 
