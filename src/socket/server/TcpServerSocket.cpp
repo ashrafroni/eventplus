@@ -36,6 +36,7 @@ void TcpServerSocket::stopPolling() {
 void TcpServerSocket::closeAllClientSocket() {
     std::unique_lock<std::mutex> lock(clientEventStoresMutex);
     for (const auto& [socketid, clientSocket] : clientEventStores) {
+//        m_socketHandler.setBlocking(socketid);
         clientSocket->closeConnection();
     }
     clientEventStores.clear();
@@ -145,6 +146,9 @@ bool TcpServerSocket::createServerSocketAndStartReceiving() {
 }
 
 void TcpServerSocket::handleCallBackEvent(EventStorePointer* eventStorePointer) {
+
+
+
     if (eventStorePointer->m_eventType == EventTypeIncomingData) { // Assuming EventTypeIncomingData is defined appropriately
         if (m_eventReceiver != nullptr)
             m_eventReceiver->dataEvent(eventStorePointer);
@@ -154,7 +158,10 @@ void TcpServerSocket::handleCallBackEvent(EventStorePointer* eventStorePointer) 
     } else if (eventStorePointer->m_eventType == EventTypeClosedConnection) { // Assuming EventTypeClosedConnection is defined appropriately
         if (m_eventReceiver != nullptr)
             m_eventReceiver->connectionClosedEvent(eventStorePointer);
+    }else {
+        std::cout << "Other" << std::endl;
     }
+
 }
 
 void TcpServerSocket::startReceivingConnection() {
@@ -164,6 +171,7 @@ void TcpServerSocket::startReceivingConnection() {
 
 void TcpServerSocket::setSocketOperationHandler(BaseSocketHandler* socketOperationHandler) {
     m_socketOperationHandler = socketOperationHandler;
+    m_socketOperationHandler->setSocketRemovalHandler(this);
 }
 
 void TcpServerSocket::setEventReceiver(ServerEventReceiver* eventReceiver) {

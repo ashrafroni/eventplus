@@ -14,7 +14,7 @@ TcpClientSocket::TcpClientSocket(const std::string &serverIp, int serverPort): m
 
 
 bool TcpClientSocket::createClientSocketAndStartReceiving(){
-    int clientSocket = m_socketHandler.createClientSocket(m_serverIP,std::to_string(m_serverPort));
+    int clientSocket = m_socketHandler.createClientSocket(m_serverIP,std::to_string(m_serverPort),false);
 
     if(clientSocket < 0)
         return false;

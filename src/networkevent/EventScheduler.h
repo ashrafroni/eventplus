@@ -11,11 +11,13 @@
 class EventScheduler {
 
 public:
-    EventScheduler(size_t numThreads);
+    explicit EventScheduler(size_t numThreads);
     ~EventScheduler();
 
     bool addSocket(EventStorePointer* eventStorePointer);
+
     void startAllEventHandler();
+
     void setEventDispatcherPtr(EventDispatcher* eventDispatcher);
     void setSocketRemovalHandler(SocketRemovalHandler* removeSocketEventHandler);
     void stopAllPollingAndThread();

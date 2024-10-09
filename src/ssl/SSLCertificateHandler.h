@@ -23,7 +23,7 @@ public:
     // Initialize the certification manager
     bool initCertificationManager();
 
-    // Obtain a new SSL certificate
+    // Obtain a new SSL certificate for the client socket
     SSL* getNewCertificate();
 
     // Display the certificates

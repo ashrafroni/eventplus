@@ -13,15 +13,19 @@
 #include "../../networkevent/EventHandlerThread.h"
 #include "../../common/ClientEventReceiver.h"
 
-class TLSClient : public EventDispatcher{
+class TLSClient : public EventDispatcher,SocketRemovalHandler{
 public:
-    TLSClient(const std::string& address, const std::string& port);
+    TLSClient(std::string  address, std::string  port);
     ~TLSClient();
 
-    bool Connect();
-    int SendData(std::string& data);
-    void Close();
+    bool connect();
+    int  sendData(std::string& data);
+    void close();
     void handleIOEvent(EventStorePointer* eventStorePointer) override;
+    void removeSocket(EventStorePointer* eventStorePointer) override;
+
+    void setClientEventReceiver(ClientEventReceiver* clientEventReceiver);
+
 
 private:
     std::string m_address;
@@ -32,5 +36,5 @@ private:
     std::unique_ptr<EventStorePointer> m_clientSocket;
     std::unique_ptr<EventHandlerThread> m_socketEventHandler;
     BaseSocketHandler* m_baseSocketHandler;
-    ClientEventReceiver* m_clientEventReceiver;
+    ClientEventReceiver* m_clientEventReceiver{};
 };

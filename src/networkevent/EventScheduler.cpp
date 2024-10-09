@@ -21,20 +21,25 @@ EventScheduler::~EventScheduler(){
 }
 
 void EventScheduler::stopAllPollingAndThread(){
-    for (size_t currentIndex = 0; currentIndex < m_socketEventHandlers.size(); currentIndex++) {
-        m_socketEventHandlers.at(currentIndex)->stopEventThread();
+    for (const auto & socketEventHandler : m_socketEventHandlers) {
+        socketEventHandler->stopEventThread();
     }
 
 }
 
 
 void EventScheduler::setSocketRemovalHandler(SocketRemovalHandler* removeSocketEventHandler){
-    for (size_t currentIndex = 0; currentIndex < m_numThreads; currentIndex++) {
-        m_socketEventHandlers.at(currentIndex)->setSocketRemovalHandler(removeSocketEventHandler);
+
+    for(auto & socketEventHandler : m_socketEventHandlers){
+        socketEventHandler->setSocketRemovalHandler(removeSocketEventHandler);
     }
+//    for (size_t currentIndex = 0; currentIndex < m_numThreads; currentIndex++) {
+//        m_socketEventHandlers.at(currentIndex)->setSocketRemovalHandler(removeSocketEventHandler);
+//    }
 }
 
 void EventScheduler::setEventDispatcherPtr(EventDispatcher* eventDispatcher){
+//    for(auto & )
     for (size_t currentIndex = 0; currentIndex < m_numThreads; currentIndex++) {
         m_socketEventHandlers.at(currentIndex)->setEventDispatcherPtr(eventDispatcher);
     }

@@ -109,7 +109,9 @@ ssize_t TCPServerSocketHandler::receivePartialData(EventStorePointer* eventStore
 void TCPServerSocketHandler::closeConnection(EventStorePointer* eventStorePointer){
     close(eventStorePointer->m_socketId);
 }
+void TCPServerSocketHandler::setSocketRemovalHandler(SocketRemovalHandler* removeSocketEventHandler) {
 
+}
 
 
 //ssize_t TCPServerSocketHandler::receiveData(EventStorePointer* eventStorePointer, std::string& data){

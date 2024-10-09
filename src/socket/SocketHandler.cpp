@@ -69,7 +69,7 @@ int SocketHandler::createServerSocket(std::string serverIP, std::string serverPo
     return serverSocketID;
 }
 
-int SocketHandler::createClientSocket(std::string serverIP,std::string strServerPort)
+int SocketHandler::createClientSocket(std::string serverIP,std::string strServerPort,bool isNonBlockingSocket)
 {
     struct addrinfo hints = {0}, *addrs, *addr;
     hints.ai_family = AF_UNSPEC;
@@ -105,7 +105,9 @@ int SocketHandler::createClientSocket(std::string serverIP,std::string strServer
         std::cerr << "Failed to connect to " << serverIP << std::endl;
         return -1;
     }
-    setNonBlocking(sfd);
+    if(isNonBlockingSocket) {
+        setNonBlocking(sfd);
+    }
     return sfd;
 
 }

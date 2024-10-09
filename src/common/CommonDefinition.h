@@ -32,5 +32,6 @@ enum EventType
     EventTypeBlank = 0,
     EventTypeNewConnection,
     EventTypeClosedConnection,
-    EventTypeIncomingData
+    EventTypeIncomingData,
+    EventTypeOther
 };

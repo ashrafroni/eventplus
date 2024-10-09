@@ -8,7 +8,8 @@
 #include <sys/epoll.h>
 #include <openssl/ssl.h>
 #include "CommonDefinition.h"
-#include "BaseSocketHandler.h"
+#include "SocketRemovalHandler.h"
+
 
 class SocketDetails {
 
@@ -22,22 +23,40 @@ public:
     SocketStatus m_socketStatus;
     EPOLL_EVENTS m_epollEvent;
 };
+class EventStorePointer;
+class SocketRemovalHandler;
 
+class BaseSocketHandler {
+public:
+    virtual bool initConnection(EventStorePointer* eventStorePointer) = 0;
+    virtual ssize_t sendData(EventStorePointer* eventStorePointer,std::string& data) = 0;
+    virtual ssize_t receiveData(EventStorePointer* eventStorePointer, std::string& data) = 0;
+    virtual ssize_t receivePartialData(EventStorePointer* eventStorePointer,int dataSize, std::string& data) = 0;
+    virtual ssize_t getAvailableDataInSocket(EventStorePointer* eventStorePointer) = 0;
+    virtual void closeConnection(EventStorePointer* eventStorePointer) = 0;
+    virtual void setSocketRemovalHandler(SocketRemovalHandler* removeSocketEventHandler) = 0;
+};
 
+class SocketRemovalHandler{
+public:
+    virtual void removeSocket(EventStorePointer* eventStorePointer) = 0;
+};
 class EventStorePointer : public SocketDetails {
 public:
     void* m_parameters;
     void* m_socketEventHandler;
     EventType m_eventType;
-    BaseSocketHandler* m_socketOperationHandler;
+    BaseSocketHandler* m_baseSocketHandler{};
     std::mutex m_socketMutex;
 
-    SSL* m_SSL;
-    EventStorePointer() : m_parameters(nullptr),m_socketEventHandler(nullptr),m_socketOperationHandler(nullptr),m_eventType(EventTypeBlank) {
+    SSL* m_SSL{};
+    EventStorePointer() : m_parameters(nullptr), m_socketEventHandler(nullptr),  m_eventType(EventTypeBlank) {
+//        m_baseSocketHandler = nullptr;
     }
 
-    EventStorePointer(const SocketDetails& details, void* parameters = nullptr)
-            : SocketDetails(details), m_parameters(parameters),m_socketEventHandler(nullptr),m_socketOperationHandler(nullptr),m_eventType(EventTypeBlank) {
+    explicit EventStorePointer(const SocketDetails& details, void* parameters = nullptr)
+            : SocketDetails(details), m_parameters(parameters), m_socketEventHandler(nullptr), m_eventType(EventTypeBlank) {
+//        m_baseSocketHandler = nullptr;
 
     }
 
@@ -55,30 +74,33 @@ public:
     }
 
     void setSocketHandler(BaseSocketHandler* socketOperationsHandler) {
-        m_socketOperationHandler = socketOperationsHandler;
+        m_baseSocketHandler = socketOperationsHandler;
     }
 
     bool initConnection() {
-        return m_socketOperationHandler->initConnection(this);
+        return m_baseSocketHandler->initConnection(this);
     }
 
     ssize_t sendData(std::string& data) {
-        return m_socketOperationHandler->sendData(this, data);
+        std::cout << "sendData:" << data << std::endl;
+        return m_baseSocketHandler->sendData(this, data);
     }
 
     ssize_t receiveData(std::string& data) {
-        return m_socketOperationHandler->receiveData(this, data);
+        return m_baseSocketHandler->receiveData(this, data);
     }
 
     ssize_t receivePartialData(int dataSize, std::string& data) {
-        return m_socketOperationHandler->receivePartialData(this, dataSize, data);
+        return m_baseSocketHandler->receivePartialData(this, dataSize, data);
     }
 
     ssize_t getAvailableDataInSocket() {
-        return m_socketOperationHandler->getAvailableDataInSocket(this);
+        return m_baseSocketHandler->getAvailableDataInSocket(this);
     }
 
     void closeConnection() {
-        m_socketOperationHandler->closeConnection(this);
+        m_baseSocketHandler->closeConnection(this);
     }
 };
+
+

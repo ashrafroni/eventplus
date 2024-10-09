@@ -7,13 +7,14 @@
 #include "socket/client/TLSClient.h"
 #include<chrono>
 #include<thread>
+#include <sstream>
 
 
 
 class Ctest : public ServerEventReceiver{
 public:
     void newConnectionEvent(EventStorePointer* eventStorePointer){
-        std::cout << "newConnectionEvent:" << std::endl;
+        std::cout << "newConnectionEvent:"  << eventStorePointer->m_socketId<< std::endl;
     }
 
     void connectionClosedEvent(EventStorePointer* eventStorePointer){
@@ -21,13 +22,24 @@ public:
     }
 
     void dataEvent(EventStorePointer* eventStorePointer){
-        int availabledata = eventStorePointer->getAvailableDataInSocket();
-        std::cout << "ServerEventReceiver:" << availabledata << std::endl;
+
+        eventStorePointer->getAvailableDataInSocket();
+        std::cout << "TLS ServerEventReceiver:" <<  std::endl;
+
+
         std::string incomingData;
         eventStorePointer->receiveData(incomingData);
         std::cout << "data:" << incomingData << std::endl;
+        std::ostringstream oss;
+        oss << "data:" << incomingData;
+        std::string strData = oss.str();
+        eventStorePointer->sendData(strData);
+
     }
 };
+
+
+
 
 Ctest g_test;
 
@@ -47,51 +59,6 @@ void sendDataUsingTCP(){
 
 }
 
-int sendDataUsingTLS(){
-    std::string address = "127.0.0.1"; // Replace with your server address
-    std::string port = "8089";            // Replace with your server port
-
-    // Step 2: Create an instance of the TLSClient class
-    TLSClient client(address, port);
-
-    // Step 3: Initialize the SSL context
-    if (!client.Init()) {
-        std::cerr << "Failed to initialize SSL context" << std::endl;
-        return -1;
-    }
-
-    // Step 4: Connect to the TLS server
-    if (!client.Connect()) {
-        std::cerr << "Failed to connect to the server" << std::endl;
-        return -1;
-    }
-    std::this_thread::sleep_for(std::chrono::seconds(10));
-    // Step 5: Send data to the server
-    const std::string message = "Hello, TLS server!";
-    std::cout << message << std::endl;
-    int bytesSent = client.SendData(reinterpret_cast<const uint8_t*>(message.c_str()), message.length());
-    if (bytesSent <= 0) {
-        std::cerr << "Failed to send data to the server" << std::endl;
-        client.Close();
-        return -1;
-    }
-    std::cout << "Sent " << bytesSent << " bytes to the server" << std::endl;
-
-    // Step 6: Receive data from the server
-    std::string response = client.ReceiveData(1024); // Adjust the buffer size as needed
-    if (response.empty()) {
-        std::cerr << "Failed to receive data from the server" << std::endl;
-        client.Close();
-        return -1;
-    }
-    std::cout << "Received from server: " << response << std::endl;
-
-    // Step 7: Close the connection
-    client.Close();
-
-    return 0;
-
-}
 
 int main() {
     unsigned int numCores = std::thread::hardware_concurrency();
@@ -113,24 +80,25 @@ int main() {
     if(!bIsLoaded)
         return -1;
 
+    numCores = 1;
 
-//    TCPServerSocketHandler* tcpSocketHandler = new TCPServerSocketHandler();
+
     TcpServerSocket tcpServerSocket("127.0.0.1",8089,numCores);
-//    tcpServerSocket.setSocketOperationHandler(tcpSocketHandler);
     tcpServerSocket.setSocketOperationHandler(tlsSocketHandler);
 
     tcpServerSocket.startReceivingConnection();
     tcpServerSocket.createServerSocketAndStartReceiving();
     tcpServerSocket.setEventReceiver(&g_test);
 
-    std::this_thread::sleep_for(std::chrono::seconds(10));
+    std::this_thread::sleep_for(std::chrono::seconds(5));
     std::cout<< "Waiting before sent:" << std::endl;
-    sendDataUsingTLS();
+
     std::this_thread::sleep_for(std::chrono::seconds(15));
-    tcpServerSocket.stopPolling();
     while(true){
         std::cout<< "Waiting:" << std::endl;
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::this_thread::sleep_for(std::chrono::seconds(30));
     }
     return 0;
 }
+
+
